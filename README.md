@@ -1,28 +1,33 @@
 # kit-memory-eval
 
-A small, sharp benchmark for AI agent memory systems. Thirteen questions, four
-capabilities, two kinds of proof:
+A small, sharp read-path exam for AI agent memory systems. Seventeen
+questions, five capabilities, two kinds of proof. Call it what it is: a
+deployment smoke test with teeth, written by the system's own builders, not
+an independent comparative benchmark. Read any score here next to the
+committed baseline's score; the gap is the finding.
 
 - **Two invented worlds** (Mayfur: a regency society of cats, chronicled by two
   rival columnists in two sovereign archives). None of it exists in any
-  training corpus, so a correct answer is provably retrieval, not prior
-  knowledge. The central mystery is split across the two stores on purpose:
-  answering it requires cross-store synthesis, and each store alone dead-ends
-  honestly.
-- **One real corpus** (the complete public lifecycle of the OpenTelemetry
-  Collector's memory-ballast mechanism, 2019-2024, curated from 140 GitHub
-  threads). Every entry carries the source URL it was curated from, so every
-  claim is checkable against the living record. The fiction cannot be
-  pretrained; the real corpus cannot be dismissed as an authored puzzle.
+  training corpus, so a correct citation is strong evidence of retrieval, not
+  prior knowledge. The mystery's paper trail is split across the two stores on
+  purpose; the full case, with corroboration, only assembles across both.
+- **One real corpus** (the public lifecycle of the OpenTelemetry Collector's
+  memory-ballast mechanism, 2019-2024). The 62 published entries cite 73
+  public source URLs, so every claim is checkable against the living record;
+  the larger raw harvest and its quote validator live in the private Kit
+  repository, so only the published subset is independently checkable. The
+  fiction cannot be pretrained; the real corpus cannot be dismissed as an
+  authored puzzle.
 
 What it scores:
 
 | capability | what passes |
 |---|---|
-| retrieval | the expected entry surfaces in the top k for a natural query |
-| honest absence | an off-corpus query returns an empty list, not confident filler |
+| retrieval | the expected entry surfaces in the top k for a keyword probe (probes are tuned; verbatim natural-language questions score far lower, and that gap is a known limitation) |
+| absence, exact | a fully out-of-corpus query (a proper noun with no lexical overlap) returns an empty list |
+| absence, hard | a domain-adjacent query, an entity-anchored unsupported proposition, or a natural off-corpus question with common words returns an empty list, not confident neighbors |
 | supersession | the governing entry links, via a typed relation, to the entry it replaced, and both remain citable |
-| synthesis | a five-probe chain across two separately loaded stores all surfaces; the conclusion is written in neither store |
+| chain | a five-probe chain across two separately loaded stores all surfaces. Renamed from "synthesis" in v1.1: the harness scores that every link surfaces; it does not produce or grade the conclusion, which still needs a reader |
 
 ## Run it
 
@@ -39,21 +44,51 @@ Against your own system: implement the four-method adapter in
 python3 run.py --adapter yourmodule:YourAdapter --label yours
 ```
 
-Merging the two Mayfur stores voids the synthesis result; that question exists
-precisely to measure reasoning across memory boundaries.
+Merging the two Mayfur stores voids the chain result; that question exists
+precisely to measure retrieval across memory boundaries.
 
-## Reference result
+## Reference result (v1.1 suite)
 
 Kit's own demo kits (the systems this dataset was built for), 26 July 2026,
 measured from Cape Town over public HTTP against a CPU-only host, no LLM in
 the read path:
 
-- questions: 13/13
-- retrieval 8/8, honest absence 2/2, supersession 2/2, synthesis 1/1
-- latency: p50 989ms, p95 1043ms (client-side, network included)
+- questions: 13/17
+- retrieval 8/8, absence_exact 2/2, **absence_hard 0/4**, supersession 2/2,
+  chain 1/1
+- latency: p50 997ms, p95 1145ms (client-side, network included)
 
-Raw report: `results/kit-2026-07-26.json`. Replay any probe with curl; the
-reference kits document themselves at
+The four failures are published on purpose. Two independent cold reviews of
+this benchmark (26 July 2026) showed that the v1.0 suite's easy absence
+questions could be passed while the system confidently returned neighbors for
+domain-adjacent questions it holds nothing about. The H-class questions
+encode exactly those probes, and the reference system currently fails them.
+They stay red until the underlying grounding improves; a benchmark whose
+author hides its own failures is advertising.
+
+## Baseline
+
+`adapters/token_overlap.py` is a deliberately primitive bag-of-words scorer:
+no embeddings, no server, no model, no graph. Both cold reviews independently
+demonstrated that a ~50-line lexical baseline passes the v1.0 suite, so we
+committed one and publish it beside every reference run:
+
+| adapter | retrieval | absence_exact | absence_hard | supersession | chain | questions |
+|---|---|---|---|---|---|---|
+| Kit (live demo kits) | 8/8 | 2/2 | 0/4 | 2/2 | 1/1 | 13/17 |
+| token-overlap baseline | 7/8 | 2/2 | 2/4 | n/a | 1/1 | 11/17 + 2 n/a |
+
+Read it honestly: the baseline ties or nearly ties everywhere except typed
+supersession, and it currently beats the reference system on hard absence,
+because a crude overlap floor abstains where semantic similarity confidently
+wanders. If a system's margin over this baseline is thin, this exam cannot
+distinguish it from lexical lookup; that is a property of the exam, stated
+plainly.
+
+Raw reports: `results/kit-demo-http-2026-07-26.json`,
+`results/token-overlap-baseline-2026-07-26.json`. The pre-v1.1 reference run
+(`results/kit-2026-07-26.json`, 13/13) is kept for the record. Replay any
+probe with curl; the reference kits document themselves at
 [demo.kit-project.com/llms.txt](https://demo.kit-project.com/llms.txt),
 [mews.kit-project.com/llms.txt](https://mews.kit-project.com/llms.txt), and
 [real.kit-project.com/llms.txt](https://real.kit-project.com/llms.txt).
@@ -68,10 +103,24 @@ version first: [demo.kit-project.com/investigate](https://demo.kit-project.com/i
 
 ## What this does not measure
 
-Write-path quality, ingestion of messy data, consolidation accuracy over time,
-durability, security, or scale. This benchmark measures read-time behavior
-against curated corpora. It is one leg of evidence, deliberately small and
-fully replayable; treat any system's score here as necessary, not sufficient.
+Write-path quality, ingestion of messy data, consolidation accuracy over
+time, durability, security, or scale. It also does not measure answers: no
+model reads the retrieved entries, produces a conclusion, or gets graded on
+correctness, citations, or declining unsupported claims. The questions,
+expected titles, corpora, and reference system share an author, and the
+probes are keyword-tuned; there is no held-out split. This is one leg of
+evidence, deliberately small and fully replayable; treat any system's score
+here as necessary, not sufficient.
+
+## Changelog
+
+- **v1.1 (2026-07-26).** After two independent cold reviews: renamed
+  "synthesis" to "chain" (the harness scores surfacing, not reasoning);
+  added four hard absence questions (H1-H4) from the reviewers' own probes,
+  which the reference system currently fails; fixed a matcher bug where an
+  empty hit title satisfied any positive check; committed the token-overlap
+  baseline and its results. Headline honest number: 13/17, not 13/13.
+- **v1.0 (2026-07-26).** Initial public release; 13 questions, 13/13.
 
 ## Provenance and ethics
 

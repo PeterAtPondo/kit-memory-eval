@@ -1,7 +1,7 @@
 {
-  "adapter": "kit-demo-http",
+  "adapter": "token-overlap-baseline",
   "date": "2026-07-26",
-  "passed": 13,
+  "passed": 12,
   "total": 17,
   "results": [
     {
@@ -45,13 +45,13 @@
     {
       "id": "M3-supersession",
       "question": "Was Sweep admitted to Almeow's? Which entry governs?",
-      "status": "pass",
+      "status": "n/a",
       "probes": [
         {
           "kit": "mews",
           "query": "the count corrected committee five voices",
           "ok": true,
-          "detail": "rank 1: The Mews: the count, corrected, and gladly | supersedes -> The Mews: the count, as it stood Thursday"
+          "detail": "rank 1: The Mews: the count, corrected, and gladly | supersession n/a"
         }
       ]
     },
@@ -88,7 +88,7 @@
           "kit": "mews",
           "query": "Inkpaw copy-sheets fair round hand fortnight",
           "ok": true,
-          "detail": "rank 1: Miss Inkpaw's copy-sheets"
+          "detail": "rank 1: Miss Prudence Inkpaw, of the Fluffington book-room"
         }
       ]
     },
@@ -101,7 +101,7 @@
           "kit": "papers",
           "query": "who is Lady Whiskerdown identity question",
           "ok": true,
-          "detail": "rank 1: Lady Whiskerdown, Authoress Unknown"
+          "detail": "rank 3: Lady Whiskerdown, Authoress Unknown"
         },
         {
           "kit": "mews",
@@ -120,7 +120,7 @@
           "kit": "real",
           "query": "memory ballast introduced garbage collector heap 2019",
           "ok": true,
-          "detail": "rank 5: What the memory ballast was, and why it existed"
+          "detail": "rank 1: What the memory ballast was, and why it existed"
         }
       ]
     },
@@ -133,7 +133,7 @@
           "kit": "real",
           "query": "alternative rejected init step fail fast nudge users",
           "ok": true,
-          "detail": "rank 2: The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"
+          "detail": "rank 1: The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"
         }
       ]
     },
@@ -146,7 +146,7 @@
           "kit": "real",
           "query": "percentage sizing cgroup review split",
           "ok": true,
-          "detail": "rank 1: 2020: percentages requested, cgroups discovered"
+          "detail": "rank 1: May 2021: percentage sizing arrives in pieces"
         }
       ]
     },
@@ -166,13 +166,13 @@
     {
       "id": "B5-superseded-guidance",
       "question": "Which older guidance has been superseded, and is it still citable?",
-      "status": "pass",
+      "status": "n/a",
       "probes": [
         {
           "kit": "real",
           "query": "current guidance memory ballast GOMEMLIMIT",
           "ok": true,
-          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists | supersedes -> Superseded guidance, preserved: how the ballast era tuned memory"
+          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists | supersession n/a"
         }
       ]
     },
@@ -192,13 +192,13 @@
     {
       "id": "B7-when-removed",
       "question": "When did removal actually land?",
-      "status": "pass",
+      "status": "fail",
       "probes": [
         {
           "kit": "real",
           "query": "extension removed v0.109 September 2024",
-          "ok": true,
-          "detail": "rank 3: v0.109.0, 2024-09: removed"
+          "ok": false,
+          "detail": "none of expected in top 5"
         }
       ]
     },
@@ -218,26 +218,26 @@
     {
       "id": "H1-adjacent-pods",
       "question": "What does the case file hold about Kubernetes horizontal pod autoscaler CPU throttling?",
-      "status": "fail",
+      "status": "pass",
       "probes": [
         {
           "kit": "real",
           "query": "kubernetes horizontal pod autoscaler CPU throttling",
-          "ok": false,
-          "detail": "expected empty, got [\"2020: OOM with the limiter on, the design's blind spot\", 'What operators actually reported, in their own words']"
+          "ok": true,
+          "detail": "empty, honestly"
         }
       ]
     },
     {
       "id": "H2-adjacent-tls",
       "question": "What does the case file hold about OTLP gRPC exporter TLS certificate rotation?",
-      "status": "fail",
+      "status": "pass",
       "probes": [
         {
           "kit": "real",
           "query": "OTLP gRPC exporter TLS certificate rotation",
-          "ok": false,
-          "detail": "expected empty, got ['The migration, as the project actually staged it', 'Thread, 2024-07: still on the roster, marked Deprecated']"
+          "ok": true,
+          "detail": "empty, honestly"
         }
       ]
     },
@@ -250,7 +250,7 @@
           "kit": "papers",
           "query": "Lady Whiskerdown moon landing 1969",
           "ok": false,
-          "detail": "expected empty, got ['Madame Sphynx, Modiste of Ribbon Row', 'Lady Frostwhisker']"
+          "detail": "expected empty, got [\"Brindle's\", 'Lady Whiskerdown, Authoress Unknown']"
         }
       ]
     },
@@ -262,20 +262,20 @@
         {
           "kit": "papers",
           "query": "who won the 2022 World Cup",
-          "ok": false,
-          "detail": "expected empty, got ['The Diamond Decision']"
+          "ok": true,
+          "detail": "empty, honestly"
         },
         {
           "kit": "mews",
           "query": "who won the 2022 World Cup",
           "ok": false,
-          "detail": "expected empty, got [\"The Servants' Ball\", 'Society Papers, No. 34: On Second Chances']"
+          "detail": "expected empty, got ['Mrs. Flint, housekeeper at Blackfriars', 'The Captain, as the market rates him']"
         },
         {
           "kit": "real",
           "query": "who won the 2022 World Cup",
           "ok": false,
-          "detail": "expected empty, got ['The timeline: five years, three supersessions, one replacement', 'Threads, 2022-01: stale ballast references, swept the same day']"
+          "detail": "expected empty, got ['Threads, 2022-01: stale ballast references, swept the same day']"
         }
       ]
     }

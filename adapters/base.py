@@ -16,8 +16,8 @@ Scoring uses only what you return here:
 
 Load the datasets however suits your system (datasets/*.json: entities with
 title, content, tags, dates, typed edges, and source URLs). Keep worlds in
-SEPARATE stores: the Mayfur questions test cross-store synthesis, and
-merging the two archives voids that result.
+SEPARATE stores: the M4 chain question tests retrieval across store
+boundaries, and merging the two archives voids that result.
 """
 from __future__ import annotations
 

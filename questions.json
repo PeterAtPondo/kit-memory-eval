@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "description": "The Kit demo exam as a machine-checkable evaluation. Twelve questions across three live, public, read-only kits: the Mayfur fiction pair (retrieval provable against an invented world) and the ballast case file (real history, provenance-first). Every probe is a keyless GET; expectations match stable entry titles. Design + answer key: Kit memory m#160260 and m#160431.",
+  "version": "1.1",
+  "description": "The Kit demo exam as a machine-checkable evaluation. Seventeen questions across three live, public, read-only kits: the Mayfur fiction pair (retrieval provable against an invented world) and the ballast case file (real history, provenance-first). Every probe is a keyless GET; expectations match stable entry titles. v1.1 (2026-07-26) renames 'synthesis' to 'chain' (the harness scores that the cross-store chain surfaces; it does not grade a conclusion) and adds four hard absence questions (H1-H4) that the reference system currently fails, added after two independent cold reviews broke the easy-absence claim. Design + answer key: Kit memory m#160260 and m#160431.",
   "kits": {
     "papers": "https://demo.kit-project.com",
     "mews": "https://mews.kit-project.com",
@@ -12,8 +12,20 @@
       "exhibit": "mayfur",
       "question": "Who returned the Nalewood collar, and why?",
       "probes": [
-        {"kit": "papers", "query": "collar sealed note loan pearls treatment", "expect_titles_any": ["Sealed note: where the collar went"]},
-        {"kit": "mews", "query": "April week entered and left folded deliveries without knocking", "expect_titles_any": ["Private ledger: the April week, entered and left folded"]}
+        {
+          "kit": "papers",
+          "query": "collar sealed note loan pearls treatment",
+          "expect_titles_any": [
+            "Sealed note: where the collar went"
+          ]
+        },
+        {
+          "kit": "mews",
+          "query": "April week entered and left folded deliveries without knocking",
+          "expect_titles_any": [
+            "Private ledger: the April week, entered and left folded"
+          ]
+        }
       ],
       "notes": "One book answers alone; the other corroborates from below."
     },
@@ -22,8 +34,18 @@
       "exhibit": "mayfur",
       "question": "Ask each book who Miss Prudence Inkpaw is.",
       "probes": [
-        {"kit": "papers", "query": "Prudence Inkpaw", "expect_empty": true},
-        {"kit": "mews", "query": "Prudence Inkpaw", "expect_titles_any": ["Miss Prudence Inkpaw, of the Fluffington book-room"]}
+        {
+          "kit": "papers",
+          "query": "Prudence Inkpaw",
+          "expect_empty": true
+        },
+        {
+          "kit": "mews",
+          "query": "Prudence Inkpaw",
+          "expect_titles_any": [
+            "Miss Prudence Inkpaw, of the Fluffington book-room"
+          ]
+        }
       ],
       "notes": "The trust test: honest empty list above stairs, a life below."
     },
@@ -32,7 +54,14 @@
       "exhibit": "mayfur",
       "question": "Was Sweep admitted to Almeow's? Which entry governs?",
       "probes": [
-        {"kit": "mews", "query": "the count corrected committee five voices", "expect_titles_any": ["The Mews: the count, corrected, and gladly"], "expect_supersedes_edge_to_title": "The Mews: the count, as it stood Thursday"}
+        {
+          "kit": "mews",
+          "query": "the count corrected committee five voices",
+          "expect_titles_any": [
+            "The Mews: the count, corrected, and gladly"
+          ],
+          "expect_supersedes_edge_to_title": "The Mews: the count, as it stood Thursday"
+        }
       ],
       "notes": "The later entry governs; the earlier is kept as history on a typed edge."
     },
@@ -41,11 +70,42 @@
       "exhibit": "mayfur",
       "question": "Who leaked the Fluffington affair, and how did they know where to leave it?",
       "probes": [
-        {"kit": "papers", "query": "Fluffington leak packet brick dead-drop", "expect_titles_any": ["Handoff to myself: the Fluffington leak, where I stand"]},
-        {"kit": "papers", "query": "the hand second amanuensis letterforms baize door", "expect_titles_any": ["Working note: the hand second, and the frontier"]},
-        {"kit": "mews", "query": "night round twentieth of May mews gate packet", "expect_titles_any": ["Night ledger: the round of the twentieth of May"]},
-        {"kit": "mews", "query": "Soaper's Court loose brick legend letterbox", "expect_titles_any": ["Private ledger: legend audit, the tubs' stories"]},
-        {"kit": "mews", "query": "Inkpaw copy-sheets fair round hand fortnight", "expect_titles_any": ["Miss Prudence Inkpaw, of the Fluffington book-room", "Miss Inkpaw's copy-sheets"]}
+        {
+          "kit": "papers",
+          "query": "Fluffington leak packet brick dead-drop",
+          "expect_titles_any": [
+            "Handoff to myself: the Fluffington leak, where I stand"
+          ]
+        },
+        {
+          "kit": "papers",
+          "query": "the hand second amanuensis letterforms baize door",
+          "expect_titles_any": [
+            "Working note: the hand second, and the frontier"
+          ]
+        },
+        {
+          "kit": "mews",
+          "query": "night round twentieth of May mews gate packet",
+          "expect_titles_any": [
+            "Night ledger: the round of the twentieth of May"
+          ]
+        },
+        {
+          "kit": "mews",
+          "query": "Soaper's Court loose brick legend letterbox",
+          "expect_titles_any": [
+            "Private ledger: legend audit, the tubs' stories"
+          ]
+        },
+        {
+          "kit": "mews",
+          "query": "Inkpaw copy-sheets fair round hand fortnight",
+          "expect_titles_any": [
+            "Miss Prudence Inkpaw, of the Fluffington book-room",
+            "Miss Inkpaw's copy-sheets"
+          ]
+        }
       ],
       "notes": "The exam: five retrievals across two sovereign kits; the conclusion is written in none of them."
     },
@@ -54,8 +114,21 @@
       "exhibit": "mayfur",
       "question": "Who is Lady Whiskerdown?",
       "probes": [
-        {"kit": "papers", "query": "who is Lady Whiskerdown identity question", "expect_titles_any": ["Lady Whiskerdown, Authoress Unknown", "The Whiskerdown Question"]},
-        {"kit": "mews", "query": "printers canvass who sets the Papers type", "expect_titles_any": ["Private ledger: the printers' canvass, concluded"]}
+        {
+          "kit": "papers",
+          "query": "who is Lady Whiskerdown identity question",
+          "expect_titles_any": [
+            "Lady Whiskerdown, Authoress Unknown",
+            "The Whiskerdown Question"
+          ]
+        },
+        {
+          "kit": "mews",
+          "query": "printers canvass who sets the Papers type",
+          "expect_titles_any": [
+            "Private ledger: the printers' canvass, concluded"
+          ]
+        }
       ],
       "notes": "Canonically open: both kits return the question, not an answer. Scoring an agent: it should decline."
     },
@@ -64,7 +137,14 @@
       "exhibit": "ballast",
       "question": "Why was the memory ballast introduced?",
       "probes": [
-        {"kit": "real", "query": "memory ballast introduced garbage collector heap 2019", "expect_titles_any": ["The origin, 2019: PR #45 introduces the memory ballast", "What the memory ballast was, and why it existed"]}
+        {
+          "kit": "real",
+          "query": "memory ballast introduced garbage collector heap 2019",
+          "expect_titles_any": [
+            "The origin, 2019: PR #45 introduces the memory ballast",
+            "What the memory ballast was, and why it existed"
+          ]
+        }
       ]
     },
     {
@@ -72,7 +152,13 @@
       "exhibit": "ballast",
       "question": "Which alternative was rejected, and why?",
       "probes": [
-        {"kit": "real", "query": "alternative rejected init step fail fast nudge users", "expect_titles_any": ["The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"]}
+        {
+          "kit": "real",
+          "query": "alternative rejected init step fail fast nudge users",
+          "expect_titles_any": [
+            "The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"
+          ]
+        }
       ]
     },
     {
@@ -80,7 +166,15 @@
       "exhibit": "ballast",
       "question": "What changed during review of the percentage-sizing work?",
       "probes": [
-        {"kit": "real", "query": "percentage sizing cgroup review split", "expect_titles_any": ["May 2021: percentage sizing arrives in pieces", "2020: percentages requested, cgroups discovered", "Decision, 2021-06: size the ballast as a percentage, so containers work"]}
+        {
+          "kit": "real",
+          "query": "percentage sizing cgroup review split",
+          "expect_titles_any": [
+            "May 2021: percentage sizing arrives in pieces",
+            "2020: percentages requested, cgroups discovered",
+            "Decision, 2021-06: size the ballast as a percentage, so containers work"
+          ]
+        }
       ],
       "notes": "expect_titles_any tolerates the origins batch's clustering choices."
     },
@@ -89,7 +183,13 @@
       "exhibit": "ballast",
       "question": "Which configuration is current?",
       "probes": [
-        {"kit": "real", "query": "current guidance memory ballast GOMEMLIMIT", "expect_titles_any": ["Current guidance: do not use memory_ballast; it no longer exists"]}
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "expect_titles_any": [
+            "Current guidance: do not use memory_ballast; it no longer exists"
+          ]
+        }
       ]
     },
     {
@@ -97,7 +197,14 @@
       "exhibit": "ballast",
       "question": "Which older guidance has been superseded, and is it still citable?",
       "probes": [
-        {"kit": "real", "query": "current guidance memory ballast GOMEMLIMIT", "expect_titles_any": ["Current guidance: do not use memory_ballast; it no longer exists"], "expect_supersedes_edge_to_title": "Superseded guidance, preserved: how the ballast era tuned memory"}
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "expect_titles_any": [
+            "Current guidance: do not use memory_ballast; it no longer exists"
+          ],
+          "expect_supersedes_edge_to_title": "Superseded guidance, preserved: how the ballast era tuned memory"
+        }
       ],
       "notes": "The old truth stays citable, dated, and marked as ended."
     },
@@ -106,7 +213,13 @@
       "exhibit": "ballast",
       "question": "What did operators actually report from production?",
       "probes": [
-        {"kit": "real", "query": "operators reported GC loops readiness probes production", "expect_titles_any": ["What operators actually reported, in their own words"]}
+        {
+          "kit": "real",
+          "query": "operators reported GC loops readiness probes production",
+          "expect_titles_any": [
+            "What operators actually reported, in their own words"
+          ]
+        }
       ],
       "notes": "People appear as roles by design; the question tests testimony recall, not identity lookup."
     },
@@ -115,7 +228,13 @@
       "exhibit": "ballast",
       "question": "When did removal actually land?",
       "probes": [
-        {"kit": "real", "query": "extension removed v0.109 September 2024", "expect_titles_any": ["v0.109.0, 2024-09: removed"]}
+        {
+          "kit": "real",
+          "query": "extension removed v0.109 September 2024",
+          "expect_titles_any": [
+            "v0.109.0, 2024-09: removed"
+          ]
+        }
       ]
     },
     {
@@ -123,9 +242,75 @@
       "exhibit": "cross",
       "question": "Ask the real kit about a fictional cat.",
       "probes": [
-        {"kit": "real", "query": "Lady Whiskerdown", "expect_empty": true}
+        {
+          "kit": "real",
+          "query": "Lady Whiskerdown",
+          "expect_empty": true
+        }
       ],
       "notes": "The exhibits stay sovereign: fiction never leaks into the case file."
+    },
+    {
+      "id": "H1-adjacent-pods",
+      "exhibit": "real",
+      "question": "What does the case file hold about Kubernetes horizontal pod autoscaler CPU throttling?",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "kubernetes horizontal pod autoscaler CPU throttling",
+          "expect_empty": true
+        }
+      ],
+      "notes": "Domain-adjacent absence: shares vocabulary with the corpus (CPU, limits, resources), supported by no entry. A memory system should return nothing rather than confident neighbors. Added 2026-07-26 from a cold reviewer's probe; the reference system currently fails this."
+    },
+    {
+      "id": "H2-adjacent-tls",
+      "exhibit": "real",
+      "question": "What does the case file hold about OTLP gRPC exporter TLS certificate rotation?",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "OTLP gRPC exporter TLS certificate rotation",
+          "expect_empty": true
+        }
+      ],
+      "notes": "Domain-adjacent absence: OpenTelemetry vocabulary, zero supporting entries in the ballast corpus. Added 2026-07-26 from a cold reviewer's probe; the reference system currently fails this."
+    },
+    {
+      "id": "H3-entity-unsupported",
+      "exhibit": "mayfur",
+      "question": "Did Lady Whiskerdown land on the moon in 1969?",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "Lady Whiskerdown moon landing 1969",
+          "expect_empty": true
+        }
+      ],
+      "notes": "Entity-anchored unsupported proposition: the entity is real in this world, the proposition is supported by nothing. Hits about the entity do not ground the claim. Added 2026-07-26 from a cold reviewer's probe; the reference system currently fails this."
+    },
+    {
+      "id": "H4-worldcup",
+      "exhibit": "cross",
+      "question": "Who won the 2022 World Cup?",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "who won the 2022 World Cup",
+          "expect_empty": true
+        },
+        {
+          "kit": "mews",
+          "query": "who won the 2022 World Cup",
+          "expect_empty": true
+        },
+        {
+          "kit": "real",
+          "query": "who won the 2022 World Cup",
+          "expect_empty": true
+        }
+      ],
+      "notes": "Fully unrelated question phrased naturally, with common words (won, 2022) rather than a zero-overlap proper noun. A cold reviewer found all three kits returning irrelevant results for this in v1.0's blind spot. Added 2026-07-26."
     }
   ]
 }
