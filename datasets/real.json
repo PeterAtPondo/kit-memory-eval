@@ -1,0 +1,2986 @@
+{
+  "world": "real",
+  "entities": [
+    {
+      "key": "the-case-file",
+      "category": "case",
+      "title": "The case file: memory_ballast, a real deprecation, remembered with receipts",
+      "content": "This kit holds the complete public lifecycle of one engineering mechanism: the memory ballast in the OpenTelemetry Collector, from its command-line origins through extension, deprecation, and removal, 2019 to 2024, with aftermath. Every entry is built from the public record of github.com/open-telemetry/opentelemetry-collector: issues, pull requests, review threads, and changelogs. Every entry carries its source URL. Nothing here asks to be believed; everything here asks to be clicked.\n\nThe file exists to answer the question every engineering team eventually asks about its own past: should we still be doing X, and why did the recommendation change? For this component the answer runs through three layers of superseded configuration, one deliberation thread with real dissent, a coordinated migration across sibling projects, and a replacement that arrived from outside the project entirely, in the Go runtime itself.\n\nPeople appear here as roles: a maintainer, a contributor, a user. The public record names them; this file does not need to. Decisions get the depth. Humans get the courtesy.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector",
+      "era": "present",
+      "date": "2026-07-26T08:00:00+00:00",
+      "importance": 0.95,
+      "tags": [
+        "case-file",
+        "overview",
+        "provenance",
+        "otel-collector"
+      ],
+      "topics": [
+        "memory-management",
+        "deprecation",
+        "provenance"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector",
+          "title": "open-telemetry/opentelemetry-collector"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "the-timeline",
+      "category": "case",
+      "title": "The timeline: five years, three supersessions, one replacement",
+      "content": "2019-06: a memory ballast ships inside the Collector, set by the --mem-ballast-size-mib command-line flag (the mechanism traces to a widely read Twitch engineering post about stabilising Go garbage collection).\n\n2021-06: the ballast becomes an extension. Percentage-based sizing lands (PR #3456, v0.30.0) so containerised deployments can size the ballast against cgroup memory limits. The command-line allocation is removed in v0.31.0 with the note: use ballast extension to set memory ballast instead. First supersession.\n\n2021-09 to 2021-11: the old knobs are swept: mem-ballast-size-mib deleted (v0.36.0), the memory limiter's ballast_size_mib config deleted (PR #4365, v0.39.0). Second supersession.\n\n2022-07: Go 1.19 ships runtime/debug.SetMemoryLimit, and issue #5708 asks whether the Collector should use built-in memory limiting instead of manual mechanisms. The thread stays open to this day.\n\n2023-08: issue #8343 opens: consider removing memory_ballast. Eleven comments of deliberation follow.\n\n2023-11 to 2024-01: deprecation lands (PR #8803, v0.92.0): use GOMEMLIMIT environment variable instead. The Helm chart migrates first, deliberately, as the proving ground.\n\n2024-07 to 2024-09: removal. The service drops ballast logic (PR #10696, v0.106.0), the extension is deleted (PR #10671, v0.109.0). Third supersession, final.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+      "era": "present",
+      "date": "2026-07-26T08:05:00+00:00",
+      "importance": 0.94,
+      "tags": [
+        "timeline",
+        "spine",
+        "supersessions"
+      ],
+      "topics": [
+        "deprecation",
+        "memory-management",
+        "history"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+          "title": "#8343 Consider removing memory_ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "Collector CHANGELOG.md"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "memory-ballast-extension",
+      "category": "case",
+      "title": "What the memory ballast was, and why it existed",
+      "content": "A heap ballast is a large, deliberately useless allocation. Its only job is to raise the baseline size of a Go program's heap so the garbage collector, which triggers relative to heap growth, runs less often. The deliberation issue #8343 quotes the technique's best-known description: \"the ballast increases the base size of the heap so that our GC triggers are delayed and the number of GC cycles over time is reduced\" (from Twitch's 2019 engineering post, itself preserved in the issue via an archive link).\n\nIn the Collector, the ballast began as a command-line flag, became the memory_ballast extension in 2021, and gained percentage-based sizing so the same configuration could work on hosts, Docker, and Kubernetes by reading cgroup memory limits. Typical guidance in its era: set the ballast to a third or so of available memory, alongside the memory limiter processor.\n\nIt always had a strange shape: memory that is allocated but must never be counted, which every accounting layer then had to know about. The memory limiter accounted for ballast size; internal metrics depended on it; the service asked the extension for its size at startup. That entanglement is what made the eventual removal a three-layer operation rather than a file deletion.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+      "era": "present",
+      "date": "2021-06-16T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "ballast",
+        "mechanism",
+        "go-gc",
+        "twitch-post"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+          "title": "#8343 Consider removing memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "gomemlimit",
+      "category": "case",
+      "title": "GOMEMLIMIT: the replacement that came from outside the project",
+      "content": "Go 1.19 (August 2022) added a soft memory limit to the runtime itself: runtime/debug.SetMemoryLimit, settable via the GOMEMLIMIT environment variable. The garbage collector uses the limit directly: it runs harder as the program approaches the limit and relaxes when far from it, which addresses the same GC-thrash problem the ballast attacked, without the ballast's strange accounting shape.\n\nThe Collector never had to build its replacement; it had to notice it. Issue #5708 raised the possibility within weeks of Go 1.19 ('It is worth checking if using this is better than the manual limit'), and by the 2023 deliberation a maintainer's position had settled into the sentence that ended the extension: \"I don't see any good reason to keep this extension. GOMEMLIMIT env var is much more intuitive to use.\"\n\nThe deprecation notice made the migration explicit: use the GOMEMLIMIT environment variable instead, with the Helm chart's approach, GOMEMLIMIT at 80 percent of the container memory limit, as the worked example.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+      "era": "present",
+      "date": "2022-07-19T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "gomemlimit",
+        "go-1.19",
+        "replacement",
+        "soft-limit"
+      ],
+      "topics": [
+        "go-runtime",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+          "title": "#5708 Refactor memorylimitprocessor to use built-in memory limiting in Go"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/8803",
+          "title": "#8803 Deprecate memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-current-state",
+      "category": "guidance",
+      "title": "Current guidance: do not use memory_ballast; it no longer exists",
+      "content": "As of Collector v0.109.0 (September 2024) the memory_ballast extension is removed from the codebase entirely (PR #10671). The current mechanism for memory stability is the GOMEMLIMIT environment variable, set in the deprecation notice's words: \"Use GOMEMLIMIT environment variable instead\" (CHANGELOG, v0.92.0). The Helm chart's worked default is GOMEMLIMIT at 80 percent of the container's memory limit, in place since early 2024 and enabled by default before the extension was removed.\n\nThe memory limiter still exists and still matters: it provides pipeline back-pressure, refusing data before the process dies, which GOMEMLIMIT does not do. But since v0.106.0 it no longer accounts for ballast size at any layer: \"The memory limiter processor will no longer account for ballast size... If you are already using GOMEMLIMIT instead of the ballast extension this does not affect you\" (CHANGELOG, #10696).\n\nA configuration that still declares memory_ballast will fail to load on any current Collector. The migration is one environment variable.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/10671",
+      "era": "present",
+      "date": "2024-09-04T12:00:00+00:00",
+      "importance": 0.95,
+      "tags": [
+        "current",
+        "guidance",
+        "gomemlimit",
+        "migration"
+      ],
+      "topics": [
+        "memory-management",
+        "migration",
+        "guidance"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit",
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10671",
+          "title": "#10671 Remove the deprecated memory ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10696",
+          "title": "#10696 Remove getBallastSize from service"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-ballast-era-tuning",
+      "category": "guidance",
+      "title": "Superseded guidance, preserved: how the ballast era tuned memory",
+      "content": "This entry preserves guidance that is no longer correct, because an archive that deletes its past cannot explain its present.\n\nIn the ballast era (2021-2023) the recommended memory configuration for a production Collector was: enable the memory_ballast extension, sized as a share of available memory, commonly around a third, or via size_in_percentage which read cgroup limits so the same config worked on hosts, Docker, and Kubernetes (PR #3456); pair it with the memory limiter processor, whose accounting knew about the ballast (the two were explicitly validated against each other from v0.31.0, #3532); and let the delayed GC triggers reduce CPU spent collecting.\n\nEvery sentence of the previous paragraph is now superseded. The extension is gone, the accounting hooks are gone, and the modern equivalent of all of it is GOMEMLIMIT plus an un-entangled memory limiter. This entry stands as history with its sources intact, which is the difference between a memory and a wiki: the old truth remains citable, dated, and marked as ended.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3456",
+      "era": "present",
+      "date": "2021-06-29T12:00:00+00:00",
+      "importance": 0.85,
+      "tags": [
+        "superseded",
+        "ballast-era",
+        "tuning",
+        "preserved-history"
+      ],
+      "topics": [
+        "memory-management",
+        "guidance",
+        "history"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3456",
+          "title": "#3456 Support setting ballast size in percentage of total Mem"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-migration-map",
+      "category": "guidance",
+      "title": "The migration, as the project actually staged it",
+      "content": "The migration from ballast to GOMEMLIMIT was not a flag-day. The record shows a deliberate sequence, and the sequence is the lesson.\n\nFirst, prove the replacement elsewhere: a maintainer proposed on #8343 to \"replace the memory ballast extension by an equivalent mechanism using GOMEMLIMIT and GOGC in the Collector Helm chart and ensure that it works correctly in that setting,\" and the Helm chart issue (open-telemetry/opentelemetry-helm-charts#891) became the proving ground. Second, deprecate with instructions, not just warnings: v0.92.0's notice says plainly, use GOMEMLIMIT instead, and the deprecation PR updated the Kubernetes examples to GOMEMLIMIT at 80 percent of the memory limit \"with the same approach as in the Helm chart.\" Third, wait: the Helm chart ran GOMEMLIMIT by default for roughly six months before removal, which a maintainer cited when judging the final cleanup safe: \"since the helm chart has not been using the extension for six months... removing this feature without any additional feature gates is ok\" (#10696). Fourth, remove in layers: service, limiter accounting, then the extension itself.\n\nFor a team asking how to retire load-bearing configuration, this file's answer is: prove, instruct, wait, then remove, and write each step down where the next person can click it.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/8803",
+      "era": "present",
+      "date": "2024-07-23T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "migration",
+        "staging",
+        "helm-first",
+        "process"
+      ],
+      "topics": [
+        "migration",
+        "process",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/8803",
+          "title": "#8803 Deprecate memory_ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10696",
+          "title": "#10696 Remove getBallastSize from service"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-open-questions",
+      "category": "guidance",
+      "title": "What the record leaves honestly unsettled",
+      "content": "A trustworthy memory distinguishes what was decided from what was merely last discussed. Two things in this file remain open.\n\nIssue #5708, filed July 2022, asking whether the memory limiter should use Go's built-in memory limiting, is still open. Its own thread contains the seed of the ballast's end (a contributor's 2022 reading: \"The ballast extension should probably be deprecated in favor of the memory limit\"), but its actual proposal, refactoring the limiter itself around the runtime mechanism, was never implemented, and as late as 2024 a user posted a detailed report of GC-pressure tuning pain at 17.8 million spans per second, unresolved in that thread.\n\nAnd during the removal, a maintainer noted the memory limiter's soft-limit behaviour partly duplicated what GOMEMLIMIT now does (\"one of the features of the memory_limiter processor (soft limit forcing GC) becomes useless\", #9218), an observation that was recorded but never acted on.\n\nAsked about either, this kit will tell you what the record holds and where it stops. It will not invent a resolution the project has not reached.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+      "era": "present",
+      "date": "2024-08-19T12:00:00+00:00",
+      "importance": 0.88,
+      "tags": [
+        "open-questions",
+        "unsettled",
+        "honest-limits"
+      ],
+      "topics": [
+        "memory-management",
+        "honesty",
+        "history"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+          "title": "#5708 Refactor memorylimitprocessor (still open)"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/9218",
+          "title": "#9218 Move ballast size calculation to the init step (closed unmerged)"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-percentage-sizing-3456",
+      "category": "decision",
+      "title": "Decision, 2021-06: size the ballast as a percentage, so containers work",
+      "content": "PR #3456 (opened 2021-06-16, merged 2021-06-29, v0.30.0) added size_in_percentage to the memory_ballast extension: instead of a fixed megabyte count, the ballast could be sized as a share of total memory, where total memory is discovered by reading the cgroup limit (memory.limit_in_bytes) when the Collector runs in a container, falling back to host memory otherwise.\n\nThe PR's own description states the intent: \"dynamically set ballast size based on the total memory of the running environments. (hosts, Docker, K8s, etc)\", and documents the cgroup discovery steps explicitly, including the sentinel value (9223372036854771712) that means no limit is set. The same PR flagged the next supersession in advance: \"we'll remove --mem-ballast-size-mib support from command line later\", which v0.31.0 and v0.36.0 then did.\n\nThis was the extension's high-water mark: the moment it became genuinely deployment-portable, and the configuration surface (size_in_percentage reading cgroups) that the eventual GOMEMLIMIT migration had to match, which the Helm chart's 80-percent-of-limit approach later did.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3456",
+      "era": "present",
+      "date": "2021-06-29T12:00:00+00:00",
+      "importance": 0.87,
+      "tags": [
+        "decision",
+        "percentage-sizing",
+        "cgroups",
+        "v0.30.0",
+        "src:3456"
+      ],
+      "topics": [
+        "memory-management",
+        "containers",
+        "configuration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3456",
+          "title": "#3456 Support setting ballast size in percentage of total Mem"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-internal-removed-3493",
+      "category": "decision",
+      "title": "Decision, 2021: one ballast, and it lives in the extension",
+      "content": "By mid-2021 the Collector had two ballasts: the old internal one, set by the --mem-ballast-size-mib command-line flag, and the new memory_ballast extension. PR #3493 (June 2021) proposed removing the internal one: \"A ballast can now be set by the ballastextension.\"\n\nThe thread shows what retiring a load-bearing feature actually looks like. A maintainer put a hold on it: \"Our distro depends on the built-in ballast. Please hold this PR until we understand how we can stop depending on this feature and use the extension instead\", with a link to the downstream code that would break. The hold stood for weeks while the dependency was understood, and the removal ultimately landed via a different PR (#3626, v0.31.0), whose changelog line carries the migration sentence: \"Use ballast extension to set memory ballast instead.\" The remaining flag was deleted as a no-op in v0.36.0.\n\nFirst full supersession of the arc: same capability, new home, old path removed only after the known dependent had a way forward. The pattern repeats, larger, in 2023-2024.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3493",
+      "era": "present",
+      "date": "2021-07-30T12:00:00+00:00",
+      "importance": 0.86,
+      "tags": [
+        "decision",
+        "internal-ballast",
+        "dependency-hold",
+        "v0.31.0",
+        "src:3493"
+      ],
+      "topics": [
+        "deprecation",
+        "dependencies",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3493",
+          "title": "#3493 Remove the internal memory ballast"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-config-cleanup-4365",
+      "category": "decision",
+      "title": "Decision, 2021-11: delete the dead knob (ballast_size_mib)",
+      "content": "PR #4365 (opened and merged the same day, 2021-11-04, shipped v0.39.0) removed the memory limiter processor's ballast_size_mib configuration. The entire justification, from the thread: \"It is a no-op anyway, even if set has no effect.\"\n\nSmall entry, real lesson: the knob had already been deprecated and disconnected, and the record distinguishes the two deaths precisely. Functionality ended earlier; the configuration surface ended here; and the changelog (v0.39.0: \"Remove deprecated config (already no-op) ballast_size_mib in memorylimiterprocessor\") lets a team answer the question that plagues config archaeology: when did setting this stop doing anything, versus when did setting it become an error. Those are different dates, and both are citable.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/4365",
+      "era": "present",
+      "date": "2021-11-04T12:00:00+00:00",
+      "importance": 0.8,
+      "tags": [
+        "decision",
+        "config-cleanup",
+        "no-op",
+        "v0.39.0",
+        "src:4365"
+      ],
+      "topics": [
+        "configuration",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4365",
+          "title": "#4365 Remove deprecated config (already no-op) ballast_size_mib"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-deliberation-8343",
+      "category": "decision",
+      "title": "The deliberation, 2023: eleven comments that ended the ballast",
+      "content": "Issue #8343 (opened 2023-08-31, closed 2024-09-04) is the arc's decision record, and it reads like a model of how to retire something honestly.\n\nThe opening lays out the case with sources: the ballast's rationale, quoted from the original Twitch post via an archive link; the observation that \"a few years and Go versions have passed\"; a pointer to evidence the ballast may now be risky and \"increase memory usage\"; and the upstream Go issue. The position that carried: \"I don't see any good reason to keep this extension. GOMEMLIMIT env var is much more intuitive to use... I'd suggest we just go ahead and deprecate it with clear instructions on how to utilize GOMEMLIMIT and GOGC instead.\"\n\nThe thread holds real texture. A contributor's production data point: a host-observing deployment on 50MB of memory against a 300MB limit, no ballast needed. A user report offered as replacement evidence (the Weaviate GOMEMLIMIT writeup). A considered alternative, wrapping debug.SetMemoryLimit inside the existing extension, raised and dropped because running two mechanisms \"can be confusing.\" Real dissent on a technical claim: \"This is a misunderstanding. Go heap profiles only show what survived after the last garbage-collection.\" And a 2024 war story from a user whose gateway collectors got \"stuck in GC loops until our readiness probes failed.\"\n\nThe method that closed it: prove the replacement in the Helm chart first (\"as decided on the last Collector SIG\"), then deprecate. The closing comment, a year later: \"This is now done!!\"\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+      "era": "present",
+      "date": "2023-09-05T12:00:00+00:00",
+      "importance": 0.95,
+      "tags": [
+        "decision",
+        "deliberation",
+        "dissent",
+        "evidence",
+        "src:8343"
+      ],
+      "topics": [
+        "deprecation",
+        "decision-making",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+          "title": "#8343 Consider removing memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-deprecation-8803",
+      "category": "decision",
+      "title": "Decision, 2023-12: deprecate, with instructions and no removal date",
+      "content": "PR #8803 (opened 2023-11-06, merged 2023-12-19, shipped v0.92.0) deprecated the memory_ballast extension. The changelog line is the migration in one breath: \"Deprecate memory_ballast extension. (#8343) Use GOMEMLIMIT environment variable instead.\"\n\nThe PR did four things at once, per its own description: deprecated the extension in the README, removed references from docs, updated the Kubernetes example to GOMEMLIMIT \"with the same approach as in the Helm chart (80% of memory limit)\", and deprecated the Go module. Two choices stand out in the record. It set no deadline: \"No explicit timeline is given for removal of the extension.\" And it sequenced itself behind the proving ground: a maintainer paused it with \"Looks like we are first going to enable GOMEMLIMIT by default in the Helm Chart for a couple of versions before doing this\", and the PR sat through two stale-bot warnings while the Helm evidence accumulated.\n\nThe thread also scoped the entanglements to be unwound later, listing the memory limiter and internal-metrics dependencies (#8632, #8342) as ordered follow-ups: deprecate first, untangle second, remove third. Which is exactly the order the record then shows happening.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/8803",
+      "era": "present",
+      "date": "2023-12-19T12:00:00+00:00",
+      "importance": 0.93,
+      "tags": [
+        "decision",
+        "deprecation",
+        "v0.92.0",
+        "no-deadline",
+        "src:8803"
+      ],
+      "topics": [
+        "deprecation",
+        "migration",
+        "process"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/8803",
+          "title": "#8803 Deprecate memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-removal-10671",
+      "category": "decision",
+      "title": "Decision, 2024: remove in layers, judge by the proving ground",
+      "content": "The removal came in two coordinated PRs, and the record preserves the safety argument.\n\nPR #10696 (merged 2024-07-23, v0.106.0) removed the service's ballast logic first: \"This effectively deprecates the ballastextension as including the extension with this service would do nothing.\" The three-layer changelog entries each carry the same reassurance: \"If you are already using GOMEMLIMIT instead of the ballast extension this does not affect you.\" The justification for skipping feature gates is a dated, quantified sentence: \"since the helm chart has not been using the extension for six months, the value of process_runtime_heap_alloc_bytes has been reported without ballast size for quite some time, so removing this feature without any additional feature gates is ok.\"\n\nPR #10671 (opened 2024-07-19, merged 2024-09-04, v0.109.0) then deleted the extension itself and the accounting that referenced it. The author deliberately kept the umbrella issue open pending the Helm chart's final update, and the only fallout logged in-thread by late August was a single issue reference.\n\nThe deliberation issue closed the same day with \"This is now done!!\", thirteen months after it opened. Nothing in the arc was rushed; everything in it is citable.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/10671",
+      "era": "present",
+      "date": "2024-09-04T12:00:00+00:00",
+      "importance": 0.92,
+      "tags": [
+        "decision",
+        "removal",
+        "v0.109.0",
+        "six-months",
+        "src:10671"
+      ],
+      "topics": [
+        "deprecation",
+        "process",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10671",
+          "title": "#10671 Remove the deprecated memory ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10696",
+          "title": "#10696 Remove getBallastSize from service"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-init-step-rejected-9218",
+      "category": "decision",
+      "title": "The alternative that lost, 2024-01: accommodate the ballast, or nudge it out",
+      "content": "PR #9218 (2024-01-04, closed the same day, unmerged) is the arc's preserved fork in the road. To unblock moving the memory limiter from processor to extension, it proposed calculating ballast size at the init step so the two could keep cooperating even though the ballast was already deprecated. The PR's own text weighs the alternative: failing fast would \"force users to handle the ballast deprecation before trying the new memory_limiter extension.\"\n\nA maintainer pushed back with the questions that decide such things: \"We deprecated memory_ballast, how does the memory_[processor|extension] work with the new golang way of doing ballast? If we remove the deprecated memory_ballast do we still need this?\" In the discussion, a second maintainer sided with failing fast: \"I like this approach better; nudging users towards not using the ballast extension seems like a good idea.\" The author closed the PR: \"OK, I'll close this PR and add the ballast extension check after #8964 is merged.\"\n\nThe thread also left one loose observation on the record, that with GOMEMLIMIT, the memory limiter's soft-limit-forcing-GC feature \"becomes useless\", noted, not actioned, and this file holds it under open questions rather than pretending it was resolved.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/9218",
+      "era": "present",
+      "date": "2024-01-04T12:00:00+00:00",
+      "importance": 0.87,
+      "tags": [
+        "decision",
+        "rejected-alternative",
+        "fail-fast",
+        "src:9218"
+      ],
+      "topics": [
+        "decision-making",
+        "deprecation",
+        "design"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/9218",
+          "title": "#9218 Move ballast size calculation to the init step (closed unmerged)"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-gomemlimit-pivot-5708",
+      "category": "thread",
+      "title": "The pivot thread, 2022, still open: should the limiter use the runtime?",
+      "content": "Issue #5708 (opened 2022-07-19, open to this day) asked, weeks after Go 1.19 shipped, whether the memory limiter should be rebuilt on runtime/debug.SetMemoryLimit: \"It is worth checking if using this is better than the manual limit that we do in the memorylimitprocessor currently. Also worth exploring if this can be possibly combined with GOGC=off (crazy?) or GOGC setting very high and deleting the ballast extension.\"\n\nThe replies drew the boundaries that held for the next two years. On GOGC=off: \"Unsetting GOGC is indeed crazy, as every workload is different, and every deployment has its memory usage profile.\" On compatibility: any Go 1.19 feature had to sit behind a build tag while Go 1.18 support was promised. And the comment that quietly named the future: \"The memorylimiterprocessor is still useful as feedback into the pipeline... The ballast extension should probably be deprecated in favor of the memory limit.\" That sentence, from July 2022, is the arc's earliest clear statement of the ending, written a year before the deliberation issue existed.\n\nThe thread's proposal itself was never implemented, and in 2024 it accumulated a detailed production report of GC-pressure tuning pain at very high span rates. It remains the arc's honest loose end.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+      "era": "present",
+      "date": "2022-07-19T12:00:00+00:00",
+      "importance": 0.88,
+      "tags": [
+        "thread",
+        "pivot",
+        "go-1.19",
+        "still-open",
+        "src:5708"
+      ],
+      "topics": [
+        "go-runtime",
+        "memory-management",
+        "design"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+          "title": "#5708 Refactor memorylimitprocessor to use built-in memory limiting in Go"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-cross-project-ripple",
+      "category": "thread",
+      "title": "The ripple: one deprecation, four projects",
+      "content": "Retiring the ballast was never a single-repo change, and the record shows the coordination explicitly.\n\nThe Helm chart went first, on purpose: the deliberation thread records the plan \"to replace the memory ballast extension by an equivalent mechanism using GOMEMLIMIT and GOGC in the Collector Helm chart and ensure that it works correctly in that setting\", filed as opentelemetry-helm-charts#891 \"as decided on the last Collector SIG.\" The chart enabled GOMEMLIMIT by default and ran that way for months, becoming the dated evidence (\"six months\") the final removal cited.\n\nThe Operator followed the same path after a user asked \"Are there any plans on implementing GOMEMLIMIT for the operator/operator-chart as well?\" and a maintainer invited the issue: \"it will further help validate that GOMEMLIMIT is a valid alternative.\" The deprecation PR's description queued the rest: \"Other issues will be opened for opentelemetry.io, the OpenTelemetry Operator and other parts of the OpenTelemetry project to remove references to this extension.\"\n\nFor a team asking who else has to move when we retire X, this is the shape of the answer: the record names the neighbours, the order, and which one was chosen as the proving ground.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+      "era": "present",
+      "date": "2023-09-13T12:00:00+00:00",
+      "importance": 0.86,
+      "tags": [
+        "thread",
+        "cross-project",
+        "helm",
+        "operator",
+        "coordination"
+      ],
+      "topics": [
+        "migration",
+        "coordination",
+        "process"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+          "title": "#8343 Consider removing memory_ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-helm-charts/issues/891",
+          "title": "helm-charts#891 GOMEMLIMIT by default"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-user-experience",
+      "category": "thread",
+      "title": "What operators actually reported, in their own words",
+      "content": "The arc's decisions rested on production experience that the threads preserve, quoted here with people as roles.\n\nA contributor running host-observing deployments, during the deliberation: \"we've not needed the ballast extension... On average, our deployments will use: 50Mb of memory with a hard limit 300Mb (set by docker aka cgroups)... 3% CPU utilisation with a hard limit of 1 full core.\" Evidence that a whole class of deployments never needed the mechanism at all.\n\nA user, February 2024, on why tuning mattered: gateway collectors generating metrics from traces \"would spike its memory usage and eventually cause the memory_limiter to start rejecting spans and metrics. It would then get stuck in GC loops until our readiness probes failed\", with Kubernetes then restarting the pods. The failure mode the whole mechanism family exists to prevent, described from inside.\n\nA user, August 2024, in the still-open pivot thread, at roughly 17.8 million spans per second across their busiest clusters: dedicating \"an unexpected amount of CPU and Memory\" and watching latency spike as the limiter kicked in during peaks. Scale pain, unresolved in that thread.\n\nAnd the technical correction that kept the record honest, from a contributor, December 2023: \"This is a misunderstanding. Go heap profiles only show what survived after the last garbage-collection.\" Deliberations that preserve their own corrections are the ones worth citing.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+      "era": "present",
+      "date": "2024-02-16T12:00:00+00:00",
+      "importance": 0.87,
+      "tags": [
+        "thread",
+        "operators",
+        "production-reports",
+        "gc-loops"
+      ],
+      "topics": [
+        "memory-management",
+        "operations",
+        "evidence"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8343",
+          "title": "#8343 Consider removing memory_ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/5708",
+          "title": "#5708 the 2024 scale report"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v030-percentage",
+      "category": "release",
+      "title": "v0.30.0, 2021-07: percentage sizing ships",
+      "content": "Changelog, v0.30.0 Beta: \"Support setting ballast size in percentage of total Mem in ballast extension (#3456)\".\n\nThe ballast becomes container-aware: sized against cgroup limits rather than fixed megabytes. The extension's most consequential feature release, and the configuration shape (share-of-available-memory) that its replacement's guidance would later mirror.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2021-07-07T12:00:00+00:00",
+      "importance": 0.78,
+      "tags": [
+        "release",
+        "v0.30.0",
+        "percentage"
+      ],
+      "topics": [
+        "configuration",
+        "releases"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.30.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v031-cmdline-removed",
+      "category": "release",
+      "title": "v0.31.0, 2021-07: the command-line ballast ends",
+      "content": "Changelog, v0.31.0 Beta: \"Remove the ballast allocation when mem-ballast-size-mib is set in command line (#3626)... Use ballast extension to set memory ballast instead.\" The same release added guardrails around the survivor: \"Add validation on ballast size between memorylimiter and ballastextension (#3532)\" and \"Access Ballast extension via Host.GetExtensions (#3634)\".\n\nFirst supersession, as shipped: the old path stops allocating, the migration sentence rides in the changelog itself, and the extension becomes the single source of ballast truth, formally validated against the limiter that must account for it. The flag's corpse was removed two releases later (v0.36.0: \"Remove mem-ballast-size-mib, already deprecated and no-op (#4005)\").\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2021-07-20T12:00:00+00:00",
+      "importance": 0.82,
+      "tags": [
+        "release",
+        "v0.31.0",
+        "supersession",
+        "migration-note"
+      ],
+      "topics": [
+        "deprecation",
+        "releases",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.31.0 / v0.36.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v039-config-removed",
+      "category": "release",
+      "title": "v0.39.0, 2021-11: the limiter's ballast knob ends",
+      "content": "Changelog, v0.39.0 Beta: \"Remove deprecated config (already no-op) ballast_size_mib in memorylimiterprocessor (#4365)\".\n\nSecond supersession complete: after the mechanism moved to the extension, the limiter's own ballast configuration, already disconnected, leaves the schema. Configs that still set it now fail to load, which is the moment config archaeology cares about.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2021-11-15T12:00:00+00:00",
+      "importance": 0.76,
+      "tags": [
+        "release",
+        "v0.39.0",
+        "config-removal"
+      ],
+      "topics": [
+        "configuration",
+        "releases"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.39.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v092-deprecated",
+      "category": "release",
+      "title": "v0.92.0, 2024-01: deprecated, with the migration in one line",
+      "content": "Changelog, v1.0.1/v0.92.0: \"extension/ballast: Deprecate memory_ballast extension. (#8343) Use GOMEMLIMIT environment variable instead.\"\n\nThe deprecation notice as users met it: two sentences, the second one the entire migration. The tracking reference points at the deliberation issue, not just the PR, so a curious reader lands on the reasons rather than the diff. This is the entry to cite when someone asks when the recommendation changed: the guidance flipped here, in January 2024, eight months before the code went away.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2024-01-15T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "release",
+        "v0.92.0",
+        "deprecation-notice"
+      ],
+      "topics": [
+        "deprecation",
+        "releases",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.92.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v0106-accounting",
+      "category": "release",
+      "title": "v0.106.0, 2024-07: three layers stop accounting for ballast",
+      "content": "Changelog, v0.106.0, three entries with one repeated reassurance:\n\n\"processor/memorylimiter: The memory limiter processor will no longer account for ballast size. (#10696) If you are already using GOMEMLIMIT instead of the ballast extension this does not affect you.\"\n\"extension/memorylimiter: The memory limiter extension will no longer account for ballast size. (#10696) If you are already using GOMEMLIMIT instead of the ballast extension this does not affect you.\"\n\"service: The service will no longer be able to get a ballast size from the deprecated ballast extension. (#10696) If you are already using GOMEMLIMIT...\"\n\nThe entanglement, unwound in public: every layer that ever knew the ballast existed stops knowing, each with the same sentence telling migrated users they are safe. The extension is now configuration theatre, present but powerless, and its deletion two releases later is a formality.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2024-07-29T12:00:00+00:00",
+      "importance": 0.87,
+      "tags": [
+        "release",
+        "v0.106.0",
+        "accounting-removal",
+        "three-layers"
+      ],
+      "topics": [
+        "releases",
+        "migration",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.106.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "r-v0109-removal",
+      "category": "release",
+      "title": "v0.109.0, 2024-09: removed",
+      "content": "Changelog, v1.15.0/v0.109.0: \"ballastextension: Removes the deprecated ballastextension (#10671)\".\n\nOne line, five years after the mechanism entered the codebase, thirteen months after the deliberation opened, eight months after the deprecation notice. The arc's final rung: anyone asking today whether to use memory_ballast can be answered with this line and its two predecessors, each carrying its reasons one click away.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+      "era": "present",
+      "date": "2024-09-09T12:00:00+00:00",
+      "importance": 0.89,
+      "tags": [
+        "release",
+        "v0.109.0",
+        "removal",
+        "final"
+      ],
+      "topics": [
+        "releases",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md",
+          "title": "CHANGELOG v0.109.0"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-origin-45",
+      "category": "thread",
+      "title": "The origin, 2019: PR #45 introduces the memory ballast",
+      "content": "PR #45 (opened 2019-06-24, merged 2019-06-25) is the birth record. A contributor proposed an optional ballast for the young Collector: \"This change add an optional memory ballast to help with ease GC pressure in high thoughput scenarios\", typos preserved. The whole mechanism was one flag: \"Added new CLI flag called --mem-ballast-size-mib which represents the size of memory ballast to use in MiB. Omitting the value or setting it to zero does not set the ballast.\"\n\nThe case rested on borrowed and firsthand evidence. The description linked the Twitch engineering post on the Go memory ballast trick and the upstream Go runtime issue on GC targeting, then added production numbers: \"We've seen 30-50% increase in throughput and were able to considerably reduce the size of our collector cluster at Omnition.\" A before-and-after throughput chart was attached.\n\nThe description also carried the first doubt, about telemetry: \"Updated process telemetry code to account for the ballast and report memory usage statistics after subtracting the ballast size. I'm not sure if this makes sense in every scenario.\" Whether metrics should hide the ballast stayed contested through the 2020 extension attempt and was still being corrected in 2024. A reviewer asked for a flag explanation in the README, tracked as issue #57 and closed the following March.\n\nMerged in under two days. The flag lived until v0.31.0 disabled it, and the mechanism it created lasted until 2024. Everything later in this case file descends from this one-page 2019 description.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/45",
+      "era": "present",
+      "date": "2019-06-25T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "thread",
+        "origin",
+        "mem-ballast-size-mib",
+        "src:45",
+        "src:57"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime",
+        "history"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/45",
+          "title": "#45 Introduce optional memory ballast"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/57",
+          "title": "#57 doc: update documentation for memory ballast usage"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-darwin-test-58",
+      "category": "thread",
+      "title": "Day two, 2019: the ballast test fails on Darwin",
+      "content": "The ballast merged on 2019-06-25; issue #58 was filed the same evening. The new test panicked on macOS with \"panic: open /proc/11006/stat: no such file or directory\", because it read proc files that exist only on Linux. A maintainer's diagnosis: \"looks like non-portable code\".\n\nThe fix (PR #61, closed 2019-06-27) began as a port: \"This should make the test work on the following platforms\", listing FreeBSD, Linux, Windows, Darwin and OpenBSD. Along the way the author discovered the check had never actually run in CI: \"it had a typo linu/amd64 instead of linux so the test case never ran :)\"\n\nThen the plan reversed mid-PR: \"The test was working across platforms but not so reliably on Travis CI. It seems the testsuite and the Go compiler toolchain consuming very different amount of memory across different environments.\" The author concluded the check belonged elsewhere (\"I think it's better to have this as a standalone test that spins up a production collector instance and monitors it's memory usage\") and then went further: \"I actually removed it completely to get rid of the dependency as there was no point in carrying it for nothing.\" A maintainer signed off: \"I agree. This makes a lot of sense as an E2E test.\"\n\nIssue #58 closed 2019-07-03 with \"This was fixed in #85 and can be closed\". Two days in, the record already shows the ballast's permanent testing problem: memory behavior that depends on the environment more than on the code.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/58",
+      "era": "present",
+      "date": "2019-06-27T12:00:00+00:00",
+      "importance": 0.72,
+      "tags": [
+        "thread",
+        "testing",
+        "portability",
+        "src:58",
+        "src:61"
+      ],
+      "topics": [
+        "testing",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/58",
+          "title": "#58 test: mem ballast test fails on Darwin"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/61",
+          "title": "#61 Fixed ballast test cases by using cross-platform lib"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-testbed-proof-85",
+      "category": "thread",
+      "title": "July 2019: proving the ballast in the testbed",
+      "content": "After the in-process test was removed (#61, tracked in issue #63), two PRs moved ballast verification into the testbed in the first week of July 2019. PR #80 covered performance: \"This commit adds an end to end test to verify performance gain acheived with memory ballast\", noting \"It mainly checks the CPU usage and does not test against memory usage.\"\n\nThe numbers held up in review. A maintainer observed: \"The test with ballast specifies the same expectedMaxCPU as the one without ballast. However test results that you posted show that with ballast it actually uses less CPU. So, perhaps tighten a bit expectedMaxCPU in this test?\" And on the results file: \"This is a nice CPU improvement.\"\n\nPR #85 (merged 2019-07-02) covered the stranger property: \"Added a new test that verifies that the ballast behaves only counts to virtual memory and is not actually allocated.\" Review caught a real race (\"You are basically racing here against ballast acquisition\") against the test author's framing that \"only thing we are testing here is if ballast is taking up RSS or only VMS\". A WaitFor guard went in for correctness.\n\nThis gave the repository TestBallastMemory: the test that verifies the ballast's central trick, reserved address space with no resident memory, and that would spend 2021 failing by single megabytes.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/85",
+      "era": "present",
+      "date": "2019-07-02T12:00:00+00:00",
+      "importance": 0.78,
+      "tags": [
+        "thread",
+        "testing",
+        "testbed",
+        "src:85",
+        "src:80",
+        "src:63"
+      ],
+      "topics": [
+        "testing",
+        "memory-management",
+        "evidence"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/85",
+          "title": "#85 Added memory ballast e2e behavior test"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/80",
+          "title": "#80 Added end to end test for mem ballast"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/63",
+          "title": "#63 testbed: validate perf and memory for ballast"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-memory-limiter-498",
+      "category": "decision",
+      "title": "Decision, 2020-01: a memory limiter joins the ballast",
+      "content": "PR #498 (opened 2020-01-13, merged the next day) added the ballast's lifelong companion: \"This adds a processor that drops data according to configured memory limits.\" The motivation named the failure mode it existed for: \"The processor is important for high load situations when receiving rate exceeds exporting rate (and an extreme case of this is when the target of exporting is unavailable).\"\n\nPlacement was settled in the thread. The description first recommended running it \"immediately after the batch processor\"; a contributor corrected it: \"For it to be effective it needs to be right after the receivers, ie.: first processor on the pipeline.\" The author conceded (\"Right, I keep forgetting that batch is also async\") and the description was edited to say the limiter must come first.\n\nThe coupling that would define the next two years was flagged in review: the limiter subtracts the ballast from measured heap, so its ballast setting has to match the process's actual ballast. A reviewer asked for a warning on silent mismatch, since it \"would also help the operator notice if their were drift between the ballast size configuration for this processor and the command line mem-ballast-size-mib option\"; the author agreed: \"Good point. Added a one-time log warning on else.\" From day one, the limiter knew about the ballast only by being told, twice.\n\nAlso settled here: how often to check. \"This uses runtime.ReadMemStats to read heap size, which stops the world\", so on the interval, \"I'd say going below 1s period is risky. I'd run at 5s or higher.\"\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/498",
+      "era": "present",
+      "date": "2020-01-14T12:00:00+00:00",
+      "importance": 0.82,
+      "tags": [
+        "decision",
+        "memory-limiter",
+        "pipeline-placement",
+        "src:498"
+      ],
+      "topics": [
+        "memory-management",
+        "configuration",
+        "design"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/498",
+          "title": "#498 Add a memory limiter processor"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-two-knobs-1019",
+      "category": "thread",
+      "title": "2020: one ballast, two knobs, and the drift between them",
+      "content": "Through 2020 the ballast was one mechanism with two knobs: the --mem-ballast-size-mib flag created it, and the memory limiter's ballast_size_mib had to be told the same number. A maintainer had spelled out the subtlety while reviewing the processor README (PR #573, February): \"This seems to imply the ballast is configured by memory_limiter, which is not true\"; the processor option \"does not create a ballast, it merely informs memory limiter that the ballast exists, which is necessary for correct operation\", and already then, \"In the future we will be able to get rid of this config option from memory limiter\".\n\nIn May a user caught the project failing its own rule (issue #1019): \"According to the memory limiter, the same value configured on the command line option mem-ballast-size-mib must also be defined in the memory_limiter processor. But they are not the same in the example k8s file.\" The published example shipped with drifted values.\n\nThe fix (PR #1146, June) corrected the YAML, and the thread immediately reached past it: \"While this is a good hot fix, I think we should fix this is code so memory limiter automatically picks up whatever size is configured for memory ballast\", and \"Also, we should see if we move ballast to config instead of being a CLI arg.\" That second sentence is the extension, a year early. The same contributor also questioned the default posture: \"I think we should remove everything related to ballast from the default configuration... Majority of the deployment do not need it IMO and would benefit from a simpler setup.\"\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/1019",
+      "era": "present",
+      "date": "2020-06-20T12:00:00+00:00",
+      "importance": 0.78,
+      "tags": [
+        "thread",
+        "config-drift",
+        "two-places",
+        "src:1019",
+        "src:1146",
+        "src:573"
+      ],
+      "topics": [
+        "configuration",
+        "memory-management",
+        "documentation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/1019",
+          "title": "#1019 The ballast-size of collector seems incorrect in the example k8s file"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/1146",
+          "title": "#1146 Fix k8s config"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/573",
+          "title": "#573 Update processors README.md"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-percentage-ask-1078",
+      "category": "thread",
+      "title": "2020: percentages requested, cgroups discovered",
+      "content": "Issue #1078 (June 2020) made the portability complaint concrete: absolute MiB settings for flag and limiter meant \"This makes it hard to enable and configure these components in a default/hardcoded configuration. The percentage settings could be applied to a wide range of deployments and default values could be used.\" The ask came from downstream: \"Jaeger binaries would like to enable memory linter in the default configuration.\" A contributor agreed and sharpened it: \"The memory limiter is critical and difficult to enable by default -- agreed something like this is needed and must be in core. Even better if ballast size did not need to be set in two different places.\"\n\nA maintainer asked the load-bearing question: \"Can you clarify: percentage of what? Where do we get the total to calculate the fraction?\" Answering it (\"The total amount of memory would be derived from the host environment.\") turned out to be the hard part. PR #1622 found that \"The issue is that Go stdlib does return the wrong number of total memory when running in a container. It basically ignores cgroups and it returns the total available memory from the host.\" The cgroups reader was adapted from uber's automaxprocs after an upstream patch to expose memory reading was not accepted, which pulled the thread into MIT-license and copyright-header diligence before merge.\n\nPR #1622 (merged 2020-09-23) delivered percentages for the limiter only, with guards born of operational realism: \"It will be good to limit the configured value to 100 percent in order to avoid unexpected behavior (possible OOM) due to typos\". The ballast half was split into issue #1828 (\"I want to configure ballast size relative to the total system memory. This is helpful in a dynamic environments like docker/k8s.\") after agreement in review: \"Agreed: we'll need to make it also a percentage. Since there is a good perf gain by using it we eventually would like to enable it by default and the percentage route seems good for it.\"\n\nOn #1828 a maintainer sketched the architecture that eventually shipped in 2021: \"Yes, ideally expose an interface for components to read global application settings. The memory limiter can find out the ballast size and configure itself accordingly.\"\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/1078",
+      "era": "present",
+      "date": "2020-09-23T12:00:00+00:00",
+      "importance": 0.82,
+      "tags": [
+        "thread",
+        "percentage-sizing",
+        "cgroups",
+        "src:1078",
+        "src:1622",
+        "src:1828"
+      ],
+      "topics": [
+        "containers",
+        "configuration",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/1078",
+          "title": "#1078 Percentage settings for memory limiter processor and ballast size"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/1622",
+          "title": "#1622 Percentage memory limiter settings"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/1828",
+          "title": "#1828 Percentage settings for memory ballast"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-first-extension-try-1960",
+      "category": "thread",
+      "title": "October 2020: the extension's false start goes stale",
+      "content": "The memory_ballast extension was first built in October 2020 as a three-PR stack: skeleton (#1958), implementation (#1959), and enablement (#1960), whose stated breaking change was that \"memory ballast can be configured as an extension\" while the flag would go. A maintainer immediately asked the transition question: \"What's the plan with existing command line option? Do we keep it? If both are set do we have 2 ballasts?\"\n\nReview of #1960 pushed back on the cutover: \"I am not sure we want this breaking change. This is user-facing breaking change. Can we avoid it? Can we give warning in the log and automatically inject the extension for now? And then we will remove in a few months.\" The deeper fight was metric accounting. A contributor defended subtracting the ballast from reported memory: \"So if a collector actually consumes 2GiB of memory and has a 5GiB of ballast, metrics will show 7GiB consumption while as in reality only 2GiB would be consumed\", and \"I think this is more of a breaking change than removing the CLI flag as this'll likely cause a lot of alerts in people's environments :)\"\n\nA maintainer settled the physics with an experiment: \"Confirmed that you are wrong, and I am wrong, created a small binary and measured the memory using top and activity monitor on macos (which both showed very similar results)\", posting a table (\"Ballast Size 8198M - Real Memory Size 267M\") and adding \"Also proved that HeapAlloc in the memory stats accounts for the entire ballast.\" Then the sentence that reads like the mechanism's epitaph, four years early: \"Keep in mind that this is not a guarantee in the golang specs, which means this behavior can change at any moment.\" And, typos intact: \"We are reallying on an undiffined behavior here which should not be the case in any implementation.\"\n\nNone of it merged. All three PRs were closed by the stale bot (\"Closed as inactive. Feel free to reopen if this PR is still being worked on.\") between 2020-11-01 and 2020-11-07. The idea waited six months for its second attempt.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/1960",
+      "era": "present",
+      "date": "2020-11-07T12:00:00+00:00",
+      "importance": 0.85,
+      "tags": [
+        "thread",
+        "false-start",
+        "stale-bot",
+        "metrics-accounting",
+        "src:1960",
+        "src:1958",
+        "src:1959"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime",
+        "design"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/1960",
+          "title": "#1960 Enable memory ballast extension, update service to not create ballast"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/1958",
+          "title": "#1958 Add memory ballast extension skeleton"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/1959",
+          "title": "#1959 Add memory ballast extension implementation"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-limiter-oom-1121",
+      "category": "thread",
+      "title": "2020: OOM with the limiter on, the design's blind spot",
+      "content": "Issue #1121 (June 2020, closed December) is the era's OOM story with the full stack configured by the book: \"Kubernetes container running otelcol ends up in CrashLoopBackoff on repeated unrecoverable errors from an exporter. This is with the memory_limiter in place and working without error when data is flowing normally.\" The config shows the period plumbing: ballast_size_mib 192 declared inside the limiter, a 448 MiB limit, queued retries in front of a throttling AWS X-Ray exporter.\n\nA maintainer reproduced it and located the gap: \"the memory limiter only works for things entering the pipeline: things that are already in the pipeline aren't evicted, even if they are being retried\". The verdict was carefully split: \"I think this is actually working as designed, but we should definitely talk about improving this design, as it's clearly not enough to prevent OOMs.\" Pressed on why the limit did not hold: \"It does stop, but only after the process has exploded in memory usage way above the limit set in the memory limiter.\" Even the cadence was implicated: \"the check happens every 5s, which is already too long for high-traffic scenarios\".\n\nPointing back at the limiter's own motivation in PR #498, the same maintainer concluded that \"either the design for this processor should be changed or this processor should be removed, as it's not being very effective\", and that \"it causes a false sense of security at the moment\". The issue closed with \"Closing for now, should be fixed or at least mitigated by #2250\". The ballast-plus-limiter stack could be tuned, and still lose.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/1121",
+      "era": "present",
+      "date": "2020-12-16T12:00:00+00:00",
+      "importance": 0.8,
+      "tags": [
+        "thread",
+        "oom",
+        "operations",
+        "src:1121"
+      ],
+      "topics": [
+        "memory-management",
+        "operations",
+        "evidence"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/1121",
+          "title": "#1121 OOM on unrecoverable errors even with memory_limiter configured"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-simplify-ask-2516",
+      "category": "thread",
+      "title": "Thread, 2021: a user asks why two places, and gets a plan",
+      "content": "Issue #2516 (February 2021) is a user asking the obvious from outside: \"Set the memorylimiter in config.yaml and be done with it. Why also have the command line argument? It complicates things unnecessarily to always have to set it in 2 places (command line argument + config.yaml), particularly when they always must be set the same anyway (at least per the README for the memorylimiter).\"\n\nA maintainer confirmed both the problem and the stalled fix, pointing at the abandoned 2020 extension PR, and put it plainly: \"Right now users have to configure ballast in 2 places if I am not wrong.\" Another maintainer dug into the code and wrote down what the record had never said in one sentence: \"Before the new ballast extension was added, the command line --mem-ballast-size-mib was the only place where truly enables ballast mem allocation\", while the limiter's setting never allocated anything. Moving allocation into the processor was rejected on architectural grounds: \"It's not a good idea to enable ballast with memory allocation in memory_limiter processor because it is pipeline level component.\"\n\nThe closing plan (May 2021) names the exact work that then happened over the next two months: \"Add the new config size_mib_in_percentage in ballastextension. The total available memory will be determined by cgruops and it will only support linux\", and \"I'll remove --mem-ballast-size-mib and related code\". That plan shipped as the percentage-sizing PR (#3456) and the flag disablement (#3626), and the issue closed in July 2021.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/2516",
+      "era": "present",
+      "date": "2021-02-20T12:00:00+00:00",
+      "importance": 0.83,
+      "tags": [
+        "thread",
+        "two-places",
+        "user-feedback",
+        "src:2516"
+      ],
+      "topics": [
+        "configuration",
+        "memory-management",
+        "decision-making"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/2516",
+          "title": "#2516 Simplify memorylimiter config"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-extension-lands-3009",
+      "category": "decision",
+      "title": "Decision, 2021-04: the ballast becomes an extension",
+      "content": "PR #3009 (opened 2021-04-23, merged 2021-04-28) added the memory ballast extension for real, six months after the stale first attempt. When a maintainer asked \"What's the reason for this change? Isn't a generic memory ballast recommended anymore?\", the author stated the design goal that drove the whole 2021 arc: \"to avoid having configurations via flags. I want to have everything to be configured in the yaml, and only one flag which is the config file. Right now ballast can be configured only via flag.\"\n\nThe rollout was deliberately staged: the PR added the functionality but left the flag alive, promising removal and enablement in a followup, so for a while the Collector carried two ballast implementations, the internal one behind the flag and the new extension. Small potholes followed: the shipped example was inert until a follow-up fix, whose whole description was \"The current example is a disabled case, give a non-zero size to enable the memory ballast in the example.\" (#3062).\n\nThe component also survived the mid-2021 core-versus-contrib sweep (issue #3474), where the recorded position was that ballast \"is an important functionality and we want to keep it in core (unless we don't finish the implementation)\". Configuration at birth was a fixed size_mib; percentage sizing arrived in June via #3456.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3009",
+      "era": "present",
+      "date": "2021-04-28T12:00:00+00:00",
+      "importance": 0.87,
+      "tags": [
+        "decision",
+        "extension",
+        "yaml-over-flags",
+        "src:3009",
+        "src:3062",
+        "src:3474"
+      ],
+      "topics": [
+        "configuration",
+        "memory-management",
+        "design"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3009",
+          "title": "#3009 Add memory ballast functionality as extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3062",
+          "title": "#3062 Fix the memory blast example"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/3474",
+          "title": "#3474 Identify and move components from core to contrib"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-flaky-test-3233",
+      "category": "thread",
+      "title": "2021: TestBallastMemory, the canary that kept failing",
+      "content": "Issue #3233 (May 2021): \"The test TestBallastMemory failed during PR #3128. Unfortunately, the test does not specify what's the memory consumption, only the limit.\" The failure text was as thin as failures get: \"RSS must be less than or equal to 70\". PR #3240 improved the message first (\"While this won't solve the problem, it will help understand if we are barely above the limit, or if the test went considerably above the max.\"), and the improved output promptly showed the margin: 71 against a limit of 70.\n\nAsked whether to loosen the test or change the code, the test's original author explained why exactness was never on offer: \"Another issue with ballast is that it's behaviour is more of an approximation depending on Go's internal optimizations instead of being a deterministic behavior.\" The pragmatic fix: \"Alright, I'll change the test so that it accepts up to 10% more than what's specified as limit.\"\n\nIt did not stay fixed. December 2021, same thread: \"Test Ballast still fails all the time opening up a new issue regarding it, we need to completely rethink this.\" A mechanism whose core property is an approximation kept generating single-megabyte test failures for as long as it existed.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/3233",
+      "era": "present",
+      "date": "2021-05-24T12:00:00+00:00",
+      "importance": 0.74,
+      "tags": [
+        "thread",
+        "testing",
+        "flaky",
+        "nondeterminism",
+        "src:3233",
+        "src:3240"
+      ],
+      "topics": [
+        "testing",
+        "go-runtime",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/3233",
+          "title": "#3233 TestBallastMemory - Intermittent test failure"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3240",
+          "title": "#3240 Improve test failure logging for TestBallastMemory"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-percentage-split-3335",
+      "category": "thread",
+      "title": "May 2021: percentage sizing arrives in pieces",
+      "content": "PR #3335 (May 2021) brought percentage sizing to the extension in one piece: \"Enhance the current ballast extension which is to set memory ballast for the collector process.\" The intent to retire the flag was written into the same description: \"And we'll remove --mem-ballast-size-mib support from command line later.\" The new knob: \"Added new configuration ballast_size_in_percentage which can dynamically set ballast size based on the total memory of the running environments. (hosts, Docker, K8s, etc)\", tested by the author on EC2, Docker and Kubernetes.\n\nReview asked for surgery rather than features: \"Can you please split this into multiple PRs\", separating the code move from the enhancement. The split produced PR #3448 (\"Move cgroup and iruntime utils from memory_limiter to internal folder. It will be shared by memory_limiter and ballast_extension later.\") and the resubmitted percentage PR (#3456), which merged in late June. Review also trimmed the option name (\"size_in_percentage would be sufficient\") and asked the question that became the next PR's validation work: \"Since few users read docs, should we just not allow setting both flags at the same time? That would be a clearer signal that they aren't compatible.\"\n\nSame design, split into reviewable pieces, merged within three weeks of the split request. This is the quiet mechanics behind the v0.30.0 percentage feature.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3335",
+      "era": "present",
+      "date": "2021-06-15T12:00:00+00:00",
+      "importance": 0.79,
+      "tags": [
+        "thread",
+        "percentage-sizing",
+        "pr-hygiene",
+        "src:3335",
+        "src:3448"
+      ],
+      "topics": [
+        "containers",
+        "configuration",
+        "process"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3335",
+          "title": "#3335 enhance memory ballast extension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3448",
+          "title": "#3448 Move cgroup and iruntime utils from memory_limiter to internal folder"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-single-owner-3532",
+      "category": "decision",
+      "title": "Decision, 2021-07: the extension owns the ballast size",
+      "content": "PR #3532 (merged 2021-07-14) settled who owns the ballast number. A contributor's review question opened it: \"Is there a reason to have the config in memorylimiter and not just use the ballast extension one directly? Seems more straightforward for users\". That reopened the architecture itself; one maintainer argued for collapsing the components entirely: \"Perhaps just move ballast functionality to memory_limiter and delete the ballast extension?\", because \"I can't imagine a scenario when one wants to use a ballast because performance matter but they don't want to use a memory limiter.\"\n\nThe counterargument held: a processor is a pipeline-level component that can be instantiated many times, so allocating the ballast there means duplicate allocations and coordination problems, and there was a real single-purpose user: \"how about the use case that a user only wants to enable ballast to reduce GCs for better CPU usage but without considering drop any data.\" A third voice closed it: \"I think having the memory limiter take ballast size config from the ballast extension is the way to go.\"\n\nThe landed shape: \"Made the changes to have ballast extension be the only place that configure the ballast size value\", with the limiter reading it at runtime. The old knob survived as a label: \"I kept the ballast_size_mib config in memory limiter to not bring the breaking change to the existing users and marked it as deprecated.\" A follow-up request (\"please make this a property on the extension not a global variable. The MemoryLimiter has access to all extensions via the Host and should read from there.\") became PR #3634 the following week, wiring the lookup through Host.GetExtensions.\n\nOne mechanism, one owner, discovery instead of duplication. The deprecated knob was deleted that November via #4365.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3532",
+      "era": "present",
+      "date": "2021-07-14T12:00:00+00:00",
+      "importance": 0.84,
+      "tags": [
+        "decision",
+        "single-source",
+        "host-getextensions",
+        "src:3532",
+        "src:3634"
+      ],
+      "topics": [
+        "design",
+        "configuration",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3532",
+          "title": "#3532 Add validation on ballast size between memorylimiter and ballastextension"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3634",
+          "title": "#3634 Access Ballast extension in Memory Limiter via Host.GetExtensions"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-flag-noop-3626",
+      "category": "decision",
+      "title": "Decision, 2021-07: the flag becomes a no-op, not an error",
+      "content": "PR #3626 (merged 2021-07-23, v0.31.0) is where --mem-ballast-size-mib stopped doing anything. Split out of #3624 (\"Close and split this PR to 2 PRs\"), it chose the soft landing over the hard break: \"Can we keep mem-ballast-size-mib option in command line but do nothing on it for a few releases. I will add the warning msg to ask users to switch to ballast extension as well.\"\n\nThe breaking-change argument played out in full. One maintainer: \"The downgrade in performance (if ballast is not correctly set) cannot be considered a breaking change.\" Another: \"I think it will cause the Collector to fail at statup when the command line option is removed but someone tries to use it (as it is used in Splunk distro). If that is the case then I think it can be considered a breaking change, no?\" The resolution: \"indeed we should not FAIL, but it is fine to just print a warning and not have ballast setup if using the flag.\" Verified by the author: \"yes, we keep the flag in the command line but does nothing so we don't have the breaking change. The change has been verified. :)\"\n\nThe thread also holds the era's best line about configuration debt: \"if you block this you will maintain it (because will be a backwards incompatible change) for the next 10 years, please sign with blood and will not push on this :)\", followed by the serious version: \"Jokes aside, because it is very bad how we designed the collector to have half things in YAML and the other half in flags. We have 0 consistency of when things are configure where.\" The reply asked only for \"some grace period for users before we delete it\", and the hold cleared once the affected distro agreed to \"update our distro to use the new ballast approach (extension)\". A contributor flagged the overlap with #3493; the author answered \"it is pretty much the same. I'm fine to merge either PR.\"\n\nEven the changelog wording was corrected in review: \"Is not deprecated, is removed correct? Since the behavior is no longer there. Consider to explain what to do to fix this.\" The dead flag was deleted entirely by PR #4005 that September (v0.36.0), a one-line removal of what was by then already a no-op.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/3626",
+      "era": "present",
+      "date": "2021-07-23T12:00:00+00:00",
+      "importance": 0.86,
+      "tags": [
+        "decision",
+        "deprecation",
+        "no-op",
+        "v0.31.0",
+        "src:3626",
+        "src:4005",
+        "src:3624"
+      ],
+      "topics": [
+        "deprecation",
+        "configuration",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3626",
+          "title": "#3626 Disable mem-ballast-size-mib from command line option"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4005",
+          "title": "#4005 Remove ballast flag, already no-op"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/3624",
+          "title": "#3624 Remove mem-ballast-size-mib from command line options"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-sizing-gap-4201",
+      "category": "guidance",
+      "title": "Guidance, 2021: one third to one half, relation undocumented",
+      "content": "As of October 2021, the sizing advice on record (issue #4201, restating the limiter README): \"the ballast should be around 1/3 to 1/2 of the memory allocated to the collector\". The known-good deployment numbers came from the Helm chart: \"The helm chart sets limit_percentage to 80% of the total memory, spike_limit_percentage to 25% and ballast to 40%.\" The stated logic: \"This means that the GC runs roughly at the same time when the memory limiter kicks in.\"\n\nWhat the guidance never included was the why. The issue asked for exactly that, noting the README \"does not say if there is any relation between ballast and memory limiter\", and stayed open. A user added the operator's-eye version of the same gap (\"Looking for a similar doc, which give more details on memory limit and also the relation between ballast and memory limiter\") with three concrete questions that never got an answer in the thread.\n\nThe documentation debt outlived the mechanism. In December 2023 the thread was redirected (\"See #8343 for next steps on this issue. We will likely move to remove the memory_ballast extension.\") and in September 2024 it closed: \"The ballast extension was removed, so I am closing this as wontfix\". The relation between ballast and limiter was never documented; the components were unbundled instead.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/4201",
+      "era": "present",
+      "date": "2021-10-15T12:00:00+00:00",
+      "importance": 0.77,
+      "tags": [
+        "guidance",
+        "sizing",
+        "documentation-debt",
+        "src:4201"
+      ],
+      "topics": [
+        "guidance",
+        "documentation",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/4201",
+          "title": "#4201 Document best practice configuration for memory limiter with ballast"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-examples-catchup-4247",
+      "category": "thread",
+      "title": "Late 2021: the examples catch up with the migration",
+      "content": "Issue #4247 (October 2021) shows the migration reaching operators through the project's own examples. A maintainer running the published Kubernetes example got both eras in one log: the new warning, \"mem-ballast-size-mib command line option has been deprecated. Please use ballast extension instead!\", followed by a fatal TLS config error from the outdated image the example still referenced.\n\nThe in-thread guidance doubles as the migration note: \"You'll notice that it will fail due to a command line parameter that has been removed. Just change the command to remove it.\" A contributor did exactly that, replacing the image and dropping the example's two ballast flags (165 and 683 MiB) from the manifests via PR #4278.\n\nThe sweep finished in November: PR #4392 (merged 2021-11-10) updated the getting-started example, its whole stated purpose being \"Update example configuration to reflect current usage of memory ballast\". By the end of 2021 the flag was gone from every shipped example and the extension was the only spelled-out way to get a ballast.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/4247",
+      "era": "present",
+      "date": "2021-11-10T12:00:00+00:00",
+      "importance": 0.75,
+      "tags": [
+        "thread",
+        "examples",
+        "migration",
+        "src:4247",
+        "src:4278",
+        "src:4392"
+      ],
+      "topics": [
+        "migration",
+        "documentation",
+        "operations"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/4247",
+          "title": "#4247 Kubernetes example config is using the old TLS config"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4278",
+          "title": "#4278 Update Kubernetes example to latest version"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4392",
+          "title": "#4392 Update memory ballast usage"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-cleanup-loose-ends-4696",
+      "category": "thread",
+      "title": "Threads, 2022-01: stale ballast references, swept the same day",
+      "content": "On 2022-01-18 a maintainer opened and merged two small PRs within minutes of each other: #4696, removing a leftover warning about a config value that had already been removed, and #4697, fixing the memory limiter's error message where it still pointed at the old ballast wiring. Asked about combining them, the maintainer explained: \"one fixes a reference for memlimit config, the other a reference to the new ballast extension config, so they refer to different configs.\"\n\nSmall housekeeping, but it dates something useful: about ten weeks after v0.39.0 deleted ballast_size_mib, the codebase still carried warnings and error messages written for the old world. The 2021 migration from built-in ballast to extension left threads to pull well into 2022.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/4696",
+      "era": "present",
+      "date": "2022-01-18T12:00:00+00:00",
+      "importance": 0.6,
+      "tags": [
+        "thread",
+        "config-cleanup",
+        "src:4696",
+        "src:4697"
+      ],
+      "topics": [
+        "configuration",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4696",
+          "title": "#4696 Remove warning about already removed config value"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/4697",
+          "title": "#4697 Fix error message in memorylimiter processor related to ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-telemetry-entanglement-5571",
+      "category": "thread",
+      "title": "Thread, 2022-06: the ballast inside telemetry startup",
+      "content": "PR #5571 (opened 2022-06-21, merged 2022-06-29) fixed the collector's own MetricProvider initialization. The reason the fix was not trivial is the part that belongs in this case file. From the PR description, by a maintainer: \"the process telemetry initialization requires the ballast size, which is available after the extensions are initialized\", so the initialization had to be split in two.\n\nThat ordering constraint was the ballast's quiet tax on the architecture: process metrics could not start until the ballast extension had run, because the numbers they report were adjusted by the ballast's size. The same coupling resurfaced in 2023 as issue #8342, where the special case was finally proposed for removal.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/5571",
+      "era": "present",
+      "date": "2022-06-21T12:00:00+00:00",
+      "importance": 0.62,
+      "tags": [
+        "thread",
+        "startup-ordering",
+        "src:5571"
+      ],
+      "topics": [
+        "design",
+        "observability"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/5571",
+          "title": "#5571 Fix initialization of the MetricProvider"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-cgroup-fragility-6389",
+      "category": "thread",
+      "title": "Thread, 2022-10: cgroup parsing breaks ballast startup",
+      "content": "Issue #6389 (opened 2022-10-24 by a user running Kubernetes 1.23): \"The memory_ballast extensions fails to initialize when reading the cgroup configuration.\" The report is precise about why: \"when the cgroup driver is systemd, the third field (the cgroup path) can contain colons in its value too\", and \"Since the initialization code just splits the line by colons it detects a wrong number of fields\", so the collector died at startup with \"invalid format for CGroupSubsys\".\n\nA contributor arrived nine days later: \"Hi there! I've done minor fix for this issue.\" PR #6462 (merged 2022-11-02) did exactly what its description said: \"split line into exactly 3 parts while parsing /proc/{pid}/cgroup\".\n\nThe pattern matters more than the bug. Percentage-based sizing, added in 2021 via #3456, made the ballast depend on cgroup detection, and cgroup detection kept finding new ways to be wrong: this colon bug, and in December 2022 issue #6826, where mounting the host filesystem left the shared plumbing with \"Memory limiter trying to read incorrect file\". The convenience feature stood on a fragile foundation.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/6389",
+      "era": "present",
+      "date": "2022-10-24T12:00:00+00:00",
+      "importance": 0.68,
+      "tags": [
+        "thread",
+        "cgroups",
+        "bug",
+        "src:6389",
+        "src:6462"
+      ],
+      "topics": [
+        "containers",
+        "configuration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/6389",
+          "title": "#6389 Cgroup v1 initialization causes invalid format for CGroupSubsys when cgroup path contains colon"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/6462",
+          "title": "#6462 cgroups: accurate procfs parsing"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/6826",
+          "title": "#6826 memory_limitter does not work when mounting host filesystem with cgroupsv1"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-32bit-crash-6443",
+      "category": "thread",
+      "title": "Thread, 2022-10: the ballast crashes 32-bit builds",
+      "content": "Issue #6443 (opened 2022-10-29 by a contributor, closed 2022-10-31): \"Starting the collector with a 32-bit build using the memory_ballast extension without any ballast size specified causes a crash during startup.\" The startup error was \"failed to start extensions: strconv.Atoi: parsing ... value out of range\": the parse choked on 9223372036854771712, a value that does not fit in a 32-bit integer.\n\nThe workaround sat in the report itself: \"Starting the memory_ballast extension with setting explicit size works fine\". The defaults path, the one meant to make the ballast effortless, was the broken one. Closed in two days, but it lands in the record as another sharp edge on a mechanism sold as set-and-forget.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/6443",
+      "era": "present",
+      "date": "2022-10-29T12:00:00+00:00",
+      "importance": 0.62,
+      "tags": [
+        "thread",
+        "bug",
+        "32-bit",
+        "src:6443"
+      ],
+      "topics": [
+        "configuration",
+        "memory-management"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/6443",
+          "title": "#6443 Crash on 32-bit builds when using memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-module-split-6426",
+      "category": "decision",
+      "title": "Decision, 2022-11: ballast moved out of the core module",
+      "content": "PR #6426 (opened 2022-10-27 by a contributor, merged 2022-11-01) split the ballast and zpages extensions into their own Go modules. The changelog guidance drafted in review by a maintainer told builders what changed: \"If using one of these extensions, modify your Collector builder configuration to use gomod directly\", and \"The import path for the extension modules can now be accessed directly\".\n\nTwo days later a maintainer followed with #6466, removing the core module's dependency on ballastextension entirely. In review, a contributor asked about the small interface left behind in the memory limiter: \"should this interface be available somewhere?\" The answer: \"Not sure, if we make it available we depend on that. And contrib is not using it, so I would keep it anonymous for the moment\".\n\nNothing in either PR says removal. But by November 2022 the ballast was a separately versioned module that core no longer imported, reached only through an anonymous interface. When deletion came in 2024, this was the seam it tore along.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/6426",
+      "era": "present",
+      "date": "2022-11-01T12:00:00+00:00",
+      "importance": 0.7,
+      "tags": [
+        "decision",
+        "modularization",
+        "src:6426",
+        "src:6466"
+      ],
+      "topics": [
+        "design",
+        "configuration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/6426",
+          "title": "#6426 splitting ballast/zpages extension into their own modules"
+        },
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/6466",
+          "title": "#6466 [chore] remove dependency on ballastextension from main core module"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-buffer-pool-7264",
+      "category": "thread",
+      "title": "Thread, 2023-02: the ballast's cost named in passing",
+      "content": "Issue #7264 (opened 2023-02-27 by a contributor) proposed a bytes buffer pool to cut allocations in log reading and decoding. The ballast appears only in the motivation, and the sentence is the era in miniature: \"Using a memory ballast helps to reduce the frequency of GC. However, with it, memory usage increases a lot.\"\n\nBy early 2023 that trade-off was being stated as common knowledge in threads that were not even about the ballast. The buffer pool itself went nowhere (marked stale, closed in 2025), but the aside is the kind of sediment the removal deliberation later stood on.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/7264",
+      "era": "present",
+      "date": "2023-02-27T12:00:00+00:00",
+      "importance": 0.58,
+      "tags": [
+        "thread",
+        "gc-pressure",
+        "src:7264"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/7264",
+          "title": "#7264 Consider using a bytes buffer pool to reduce allocations and GC."
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-ballast-rss-7512",
+      "category": "thread",
+      "title": "Thread, 2023-03: the ballast escapes into RSS",
+      "content": "Issue #7512 (opened 2023-03-27 by a user, collector v0.69.0, memory_ballast at size_in_percentage: 33): \"Uses over 6Gi memory at times. Have cases where it even crosses 64Gi memory if the node has that level of memory available. Looks like GC never runs\". A maintainer read the heap profile and found the ballast itself: \"You have the memory ballast extension configured to use 33% of system memory as ballast and it is using just over 5GB as ballast\", concluding \"This seems to be working as intended.\"\n\nThen the thread reached the fault line. The theory, from the maintainer: \"That slice stays in virtual memory, so if you're looking at RSS you will not see the impact of the ballast there.\" The user's measurements: \"That's what I'd expect but unfortunately not the case.\" The user linked a golang-nuts thread as a possible explanation for the ballast landing in RSS; the maintainer called it plausible and added: \"I believe we've recently discussed whether the ballast extension is even needed with the availability of GOMEMLIMIT\".\n\nTestimony accumulated from there. July 2023, another user: \"We recommend others reading this ticket to turn off the memory ballast in otel.\" January 2024, a third: \"I can almost never predict what the memory usage is going to be if I'm honest\", and \"when I disable the ballast extension, the memory usage of my collector is lower and importantly, more predictable\". The removal deliberation #8343 cited this thread directly, writing that the extension \"may be risky in some cases and increase memory usage (this may be the cause of #7512)\".\n\nThe issue closed 2024-09-04, the day the removal PR merged, with one line from a maintainer: \"The ballast extension was removed, so I am closing this as wontfix\".\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/7512",
+      "era": "present",
+      "date": "2023-03-27T12:00:00+00:00",
+      "importance": 0.9,
+      "tags": [
+        "thread",
+        "rss",
+        "memory-investigation",
+        "src:7512"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime",
+        "observability"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/7512",
+          "title": "#7512 Ballast processor seems to escape virtual memory and enter RSS"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-tuning-roulette-8217",
+      "category": "thread",
+      "title": "Thread, 2023-08: tuning roulette under scrape load",
+      "content": "Issue #8217 (opened 2023-08-10 by a user, still open) shows what tuning looked like from the floor in the late ballast era. A Prometheus-scraping collector on v0.82 kept refusing its own scrapes: \"data refused due to high memory usage\". The thread became users comparing configs: one ran a 2000 MiB ballast beside a 4000 MiB limiter, another had no ballast and wrote \"I should try memory_ballast as well\". A third asked the era's real question: \"Does anyone have normal scrape results from pods under load?\"\n\nEach turned knob bought days, not fixes: \"At first it worked fine. And then the problems started again\". By April 2024 a reporter in the same thread was running no ballast at all, setting GOMEMLIMIT to 12GiB on a 16Gi container, at around 35K datapoints per second across 350 targets, and still hitting the refusal. The mechanism changed underneath the thread; the pain stayed where it was.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8217",
+      "era": "present",
+      "date": "2023-08-10T12:00:00+00:00",
+      "importance": 0.65,
+      "tags": [
+        "thread",
+        "user-pain",
+        "tuning",
+        "src:8217"
+      ],
+      "topics": [
+        "memory-management",
+        "configuration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8217",
+          "title": "#8217 Scrape commit failed, data refused due to high memory usage"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-metric-accounting-8342",
+      "category": "thread",
+      "title": "Thread, 2023-08: the metric that subtracted the ballast",
+      "content": "Issue #8342 (opened 2023-08-31 by a maintainer, seventeen minutes before the removal deliberation #8343) documented a distortion in the collector's own telemetry: process_runtime_heap_alloc_bytes claims to report heap allocation, but \"the actual value is runtime.MemStats.HeapAlloc minus the memory ballast size if the memory_ballast extension is being used\". The subtraction dated back to the original #45, which had even flagged the alternative: \"Another option is to add one more metric that just exports the memory ballast size as a static number and then let metric consumers to adjust the numbers.\"\n\nA contributor raised the migration risk: \"I'd expect anyone that monitors using this value today will be surprised to see that value change by the ballast size after a release.\" One maintainer wanted to wait for the bigger question: \"Why do we need to tackle this before the potential removal of the memory_ballast? I think doing it implicitly for user is pretty tricky.\" The issue's author pushed back with the era's sharpest sentence about the mechanism: \"the current metric description is wrong and we privilege this ballast extension implementation above other future approaches for no good reason other than the historical one\", while conceding \"my expectation would be that removing the memory ballast is going to be a lengthy process given how widely it is used\".\n\nThe issue closed on 2024-07-23, within the same minute as PR #10696, the change that removed getBallastSize from the service. The metric had reported ballast-adjusted numbers for five years.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8342",
+      "era": "present",
+      "date": "2023-08-31T12:00:00+00:00",
+      "importance": 0.8,
+      "tags": [
+        "thread",
+        "telemetry",
+        "metrics",
+        "src:8342"
+      ],
+      "topics": [
+        "observability",
+        "design",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8342",
+          "title": "#8342 Change process_runtime_heap_alloc_bytes metric to include memory ballast size"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-stricter-limiter-8694",
+      "category": "thread",
+      "title": "Thread, 2023-10: OOMKilled in ten seconds, ballast implicated",
+      "content": "Issue #8694 (opened 2023-10-17 by a user, still open) reported that the memory limiter \"sometimes it does not stop accepting new records fast enough\": \"it waits for the GC to free some memory and the collector faces the OOM\".\n\nThe comment that matters came from a contributor on 2023-10-23, with logs: \"Set ballast to 1351 MiB\", \"Set memory limit to 3686 MiB\", and a pod OOMKilled ten seconds after start (exit code 137, container limit 4GB). The analysis is the clearest technical indictment of the ballast-plus-limiter pairing in the record: \"The regular GC, which by default runs every time the heap doubles; when paired with the ballast and if the GC from the memory limiter didn't run to reduce the heap, then the regular GC will not run more than once.\" The conclusion: \"Proposed solution is to get rid of the ballast and start using GOMEMLIMIT\".\n\nA maintainer answered the next day, pointing at the open deliberation: \"For the ballast we are considering removal on #8343. I am interested in having end-users test GOMEMLIMIT and provide feedback on the transition, so that we can make an informed decision\". Two weeks later the deprecation PR went up.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/8694",
+      "era": "present",
+      "date": "2023-10-17T12:00:00+00:00",
+      "importance": 0.8,
+      "tags": [
+        "thread",
+        "oom",
+        "gc-behaviour",
+        "src:8694"
+      ],
+      "topics": [
+        "memory-management",
+        "go-runtime"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/8694",
+          "title": "#8694 Stricter memory limiter"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-memory-request-11039",
+      "category": "thread",
+      "title": "Thread, 2023-11: memory request asked, GOMEMLIMIT answered",
+      "content": "Issue #11039 (opened 2023-11-20 by a user) asked for a memory request gate: \"the startup of OTEL will cause a system OOM, which in turn causes user processes to exit\", so the collector should refuse to start when free memory is short. The proposal noticed the elephant on its own: \"We found that the 'ballast' component might consume memory, hence the feature of 'memory request' might need to take this into consideration\".\n\nA maintainer's reply, written two weeks after the deprecation PR opened, is the migration message in one sentence: \"historically we've used the memory ballast extension to limit memory, but it will be deprecated soon in favor of using the GOMEMLIMIT environment variable\". The feature itself was declined in 2024 (a contributor: \"I don't think this is the collector responsibility\"), but the thread preserves the moment GOMEMLIMIT became the default answer given at the door.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/11039",
+      "era": "present",
+      "date": "2023-11-20T12:00:00+00:00",
+      "importance": 0.62,
+      "tags": [
+        "thread",
+        "oom",
+        "feature-request",
+        "src:11039"
+      ],
+      "topics": [
+        "memory-management",
+        "configuration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/11039",
+          "title": "#11039 Add 'memory request' feature"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-limiter-extension-8964",
+      "category": "decision",
+      "title": "Decision, 2024-01: a memory limiter extension, built around the ballast",
+      "content": "PR #8964 (opened 2023-11-20 by a contributor, merged 2024-01-23) built the successor mechanism: \"this change is to move memory limiter to being an extension. This allows us to place the component to reject incoming connections due to limited memory, providing better protection to the otel collector.\" The changelog line settled in review: \"Introduce a memory_limiter extension which receivers can use to reject incoming requests when collector doesn't have enough memory\".\n\nThe review ran while the ballast's deprecation merged underneath it, and the ballast kept intruding. A maintainer, 2023-12-20: \"I believe we should account for the ballast size in the extension as well until the ballast extension is removed. Otherwise, we will be rejecting with the ballast enabled even if there is plenty of room.\" The contributor had assumed the opposite: \"i notice the deprecation on ballast extension. So, assume we would eventually remove it. i will add it in then.\" The correction stated the timeline plainly: \"It's deprecated but won't be removed for another year\".\n\nStartup ordering resurfaced too: a first design required the ballast extension to be present, which could not stand because \"The memory_ballast extension is optional and even discouraged.\" That detour produced PR #9218, submitted \"to make sure that the ballast is always calculated before the memory_extension is started\", and the README shipped with a warning: \"The memory_limiter extension cannot be used if the deprecated memory_ballast extension is enabled.\" The replacement was born already carrying ballast scar tissue.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/8964",
+      "era": "present",
+      "date": "2024-01-23T12:00:00+00:00",
+      "importance": 0.78,
+      "tags": [
+        "decision",
+        "memory-limiter-extension",
+        "src:8964"
+      ],
+      "topics": [
+        "design",
+        "memory-management",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/8964",
+          "title": "#8964 [extension/memorylimiter] add memory limiter extension, a copy of memorylimiter processor"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "g-readme-flip-9152",
+      "category": "guidance",
+      "title": "Guidance, 2023-12: the README flips to GOMEMLIMIT",
+      "content": "PR #9152 (opened 2023-12-20, the day after the ballast deprecation merged) set out to clean up the memory limiter's README. In review, a maintainer asked the question the date demanded: \"should we be recommending GOMEMLIMIT instead?\" Two other maintainers answered within hours: \"Right. We should\" and \"Indeed\".\n\nThe author rewrote the guidance accordingly: \"I've updated based on the recommendation in the deprecation notice of the ballast extension\". Merged 2024-01-12. This is the moment the written advice flipped: from this README on, the documented pairing was memory limiter plus GOMEMLIMIT, not memory limiter plus ballast. Around the same days, PR #9187 (2023-12-22) still moved the deprecated ballast extension onto generated metadata; maintenance continued even for a component on its way out.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/9152",
+      "era": "present",
+      "date": "2023-12-20T12:00:00+00:00",
+      "importance": 0.72,
+      "tags": [
+        "guidance",
+        "readme",
+        "src:9152"
+      ],
+      "topics": [
+        "configuration",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/9152",
+          "title": "#9152 [chore][processor/memorylimiter] Cleanup README"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-going-away-9158",
+      "category": "thread",
+      "title": "Thread, 2023-12: since the memory ballast is going away",
+      "content": "Issue #9158 (opened 2023-12-20 by a maintainer, one day after the deprecation merged) planned the untangling: \"The internal/iruntime and internal/cgroup folders are used by both the memory ballast extension and the memory limiter processor. Since the memory ballast is going away, we can move these to the memory limiter processor folder.\"\n\nGoing away was written while the ballast was merely deprecated, and the issue then sat waiting on the outcome. April 2024, to a volunteer asking for guidance: \"It seems like we still need to wait for this one until we resolve #8343\". On 2024-09-04, the day the removal merged, the same thread got its release: \"No longer on hold!\" The cleanup is still open, but its blocker is history.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/9158",
+      "era": "present",
+      "date": "2023-12-20T12:00:00+00:00",
+      "importance": 0.68,
+      "tags": [
+        "thread",
+        "cleanup",
+        "src:9158"
+      ],
+      "topics": [
+        "design",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/9158",
+          "title": "#9158 [internal] Move irtuntime and cgroup to memory limiter processor"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-scope-ghost-9494",
+      "category": "thread",
+      "title": "Thread, 2024-02: otelcol/ballast on the inconsistency list",
+      "content": "Issue #9494, opened 2024-02-06 by a contributor, one month after the deprecation shipped in v0.92.0: \"The meter name (that is translated into scope name) is currently inconsistent in this repository.\" The short-form examples given are otelcol/otlphttp and \"otelcol/ballast\". The deprecated extension still had a meter, and its name was still part of the project's housekeeping.\n\nThe discussion settled toward fully qualified names. A maintainer: \"I like the fully qualified name a bit more, as it is more descriptive.\" The issue closed 2024-08-16, when a contributor reported \"This has been done for core and contrib components.\", nineteen days before the extension's deletion merged.\n\nThe case file keeps this as a ghost sighting: a dying component keeps appearing in every cross-cutting cleanup until the day it is actually gone, and the record dates each appearance.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/9494",
+      "era": "present",
+      "date": "2024-02-06T12:00:00+00:00",
+      "importance": 0.6,
+      "tags": [
+        "thread",
+        "ghost",
+        "internal-telemetry",
+        "src:9494"
+      ],
+      "topics": [
+        "internal-telemetry",
+        "naming"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/9494",
+          "title": "#9494 Consistent scope name scheme"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-config-folklore-9514",
+      "category": "thread",
+      "title": "Thread, 2024-02: the folklore travels inside a stranger's config",
+      "content": "Issue #9514 (2024-02-07) is about something else entirely: a duplicate registered metric when the collector runs as a library with the useOtelForInternalMetrics flag enabled. It closed two days later when a contributor confirmed the fix upstream: \"Confirmed that this has been fixed in OTel v0.94.1. Closing this issue.\"\n\nThe ballast material is in a bystander comment. A user wrote \"I just bumped into this after updating to 0.93.0 using the loadbalancing exporter\" and pasted their production config. Its extensions block still declares memory_ballast with \"size_in_percentage: 40\", and above the setting rides a comment line: \"# Memory Ballast size should be max 1/3 to 1/2 of memory.\" That is the ballast-era tuning rule, fossilized as YAML commentary, still traveling in a working config a month after the deprecation shipped.\n\nNobody in the thread remarks on the extension at all. That is what makes the sighting worth keeping: guidance does not die when a mechanism is deprecated. It lives on in copied configs until something forces a rewrite.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/9514",
+      "era": "present",
+      "date": "2024-02-07T12:00:00+00:00",
+      "importance": 0.66,
+      "tags": [
+        "thread",
+        "ghost",
+        "config-folklore",
+        "src:9514"
+      ],
+      "topics": [
+        "configuration",
+        "guidance"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/9514",
+          "title": "#9514 Duplicate Registered Metric with Exporter Helper and OTel Metrics"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-roster-ghost-10598",
+      "category": "thread",
+      "title": "Thread, 2024-07: still on the roster, marked Deprecated",
+      "content": "PR #10598 (2024-07-11, a maintainer) tried to add module information to the components subcommand: \"Adds each component's module to the components subcommand output.\" The demonstration output from a 0.104.0-dev test binary lists the extension among the three still wired into core: \"name: memory_ballast\", \"module: go.opentelemetry.io/collector/extension/ballastextension@v0.104.0\", stability \"extension: Deprecated\".\n\nThe PR itself died the same day, closed with the note \"I believe #10599 is a far better solution as it does not rely on any assumptions about the call stack.\" The value here is the snapshot it left behind: eight days before the removal PR opened, the default core build still compiled, registered, and reported the extension, honestly labeled as deprecated.\n\nRemoval is a supply chain event, not a single commit, and this is what the middle of it looks like.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/10598",
+      "era": "present",
+      "date": "2024-07-11T12:00:00+00:00",
+      "importance": 0.62,
+      "tags": [
+        "thread",
+        "ghost",
+        "components-roster",
+        "src:10598"
+      ],
+      "topics": [
+        "tooling",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/10598",
+          "title": "#10598 Add mechanism to report go module for each factory"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-live-config-10660",
+      "category": "thread",
+      "title": "Thread, 2024-07: a live config names the extension on the eve of removal",
+      "content": "Issue #10660 (2024-07-18, still open) is an exporter mystery: traces stop after the debug line \"Preparing to make HTTP request\". The reporter, a user running \"Main 0.105.0\", shared their service block, and it reads \"extensions: [zpages, memory_ballast]\". The removal PR opened the next day.\n\nNobody in the thread remarks on the extension; by mid-2024 it is background furniture, sitting beside a memory_limiter in the same pipeline. The thread keeps collecting unrelated me-too reports long after the ballast is gone: \"Hello together, it's February 2025 and I have the same problem.\", and a July 2025 participant whose stall turned out to be self-inflicted: \"I found out the timeout setting caused it.\"\n\nFor the case file this is the baseline measurement: on the eve of removal, ordinary production configs still routed through memory_ballast, and every one of them was one image upgrade away from the startup failure recorded six weeks later.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/10660",
+      "era": "present",
+      "date": "2024-07-18T12:00:00+00:00",
+      "importance": 0.68,
+      "tags": [
+        "thread",
+        "ghost",
+        "live-config",
+        "src:10660"
+      ],
+      "topics": [
+        "configuration",
+        "operations"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/10660",
+          "title": "#10660 otlphttp Preparing to make HTTP request, Nothing after that. Traces not going out."
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-privileged-pattern-10181",
+      "category": "decision",
+      "title": "Decision, 2024-07: components may ask the host, never the reverse",
+      "content": "Issue #10181 (opened 2024-05-20 by a maintainer, closed 2024-07-25) reviewed how components get special powers: \"In the context of service 1.0, I want to answer the following questions\". The ballast appears as the one case running in reverse: \"We have also used this strategy the other way around in the ballast extension\", the service reaching into an extension to learn its ballast size.\n\nThe record holds both readings of that case. One maintainer saw the lookup itself as sound, noting the ballast example \"it just looks for a specific extension + interface, which is a pattern that I think is more useful\". Another, in July 2024, rejected the direction: \"I don't care for the pattern in this direction.\" and \"In my opinion it is ok for a component to ask the component.Host for something but it is not ok for the component.Host to ask a component for something.\" Then the line that dates the era: \"Luckily the ballast extension is deprecated, so that use case will be removed soon.\"\n\nThe decision landed 2024-07-22: \"This seems acceptable to me. We can require said components to specify the interface they need as part of their public API\". Components may ask the host for optional interfaces; the host must not ask components. The only recorded instance of the rejected direction was the ballast wiring, and it exited the design conversation the same month the accounting was unwound. A dying mechanism can still settle an architecture question on its way out.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/10181",
+      "era": "present",
+      "date": "2024-07-25T12:00:00+00:00",
+      "importance": 0.72,
+      "tags": [
+        "decision",
+        "service-1.0",
+        "host-pattern",
+        "src:10181"
+      ],
+      "topics": [
+        "architecture",
+        "process"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/10181",
+          "title": "#10181 [service] Define strategy for 'privileged' components"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-aftermath-10995",
+      "category": "thread",
+      "title": "Thread, 2024-08: first breakage report, closed in nineteen minutes",
+      "content": "On 2024-08-28 a user reported that the latest contrib image, 0.108.0 at the time of writing, refused to start because their config still declared memory_ballast with \"size_in_percentage: 30\". Their framing preserves the confusion of the moment: \"As far as I'm aware I know memory_ballast is deprecated but I don't see that it has been removed in the last version.\"\n\nThe collector said no at decode time: \"failed to get config: cannot unmarshal the configuration\", with \"error decoding 'extensions': unknown type\" for the id memory_ballast, followed by a list of twenty-eight valid extension types with no ballast among them. Notably, the config's service section never even enabled the extension; defining it in the extensions block was enough to fail.\n\nA maintainer closed the issue nineteen minutes after it opened with one line, \"It was removed: #607\", pointing at the releases repository. That is the detail worth keeping: the distributions dropped the extension from their manifests before the core deletion merged (#10671 was still open for another week), so latest-image users hit the wall at 0.108.0, ahead of v0.109.0. Removal reached users through the distribution, not the changelog.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/issues/10995",
+      "era": "present",
+      "date": "2024-08-28T12:00:00+00:00",
+      "importance": 0.85,
+      "tags": [
+        "thread",
+        "aftermath",
+        "breakage",
+        "v0.108.0",
+        "src:10995"
+      ],
+      "topics": [
+        "migration",
+        "operations"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/issues/10995",
+          "title": "#10995 memory_ballast extension causing latest image container failure to start"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "d-mentions-cleanup-11010",
+      "category": "decision",
+      "title": "Decision, 2024-08: scrub the mentions before deleting the code",
+      "content": "The day after the first breakage report, a contributor opened a chore PR against core with a one-line body: \"Removing references to the memory ballast extension\". It was open for twenty minutes on 2024-08-29, 15:45 to 16:05.\n\nThe thread carries its own timestamp of the endgame: a maintainer noted in passing that the deletion PR itself, \"#10671 is also ready\". Six days separated the two: references scrubbed on 2024-08-29, code deleted on 2024-09-04. The documentation cleanup ran ahead of the removal it prepared for, so nobody following the docs in the gap would be pointed at a component about to vanish.\n\nSmall entry, same lesson as the 2021 knob deletion: the sweep has an order, and the order is citable.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/11010",
+      "era": "present",
+      "date": "2024-08-29T12:00:00+00:00",
+      "importance": 0.7,
+      "tags": [
+        "decision",
+        "docs-cleanup",
+        "src:11010"
+      ],
+      "topics": [
+        "documentation",
+        "deprecation"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/11010",
+          "title": "#11010 [chore] remove mentions of the memory_ballast extension"
+        }
+      ],
+      "world": "real"
+    },
+    {
+      "key": "t-gc-aftermath-12450",
+      "category": "thread",
+      "title": "Thread, 2025-02: the hole the ballast left, measured in GC cycles",
+      "content": "Five months after the removal shipped, a maintainer PR gave the memory limiter configurable minimum GC intervals, because \"When servers are in a high memory usage mode, the amount of times GC is called creates a high CPU usage which combined with a high ingest rate limits capability to offload existing queued data.\" The fix: \"Configuring the minimum interval even for hard limit, allows the system to spend some CPU cycles between GCs to offload old data from queues/batch processor.\" The PR closed 2025-02-24.\n\nThe aftermath testimony arrived in review from a contributor: \"Note GC kicks in whenever memory doubles, so it can be punitive right now to run in a high throughput environment.\" And then, plainly: \"In our case, we leaned on the GOGC environment variable. We found that after removing the memory ballast extension, our GC would kick too often. We have set GOGC to 400 as result.\"\n\nThis is the ballast's original job, GC pacing, resurfacing as a measurable cost after the mechanism was gone, and being answered the way the deprecation said it should be: runtime knobs (GOGC alongside GOMEMLIMIT) plus limiter configuration. The case file keeps it because it proves the story did not end at removal. The need the ballast served outlived the ballast, and the record shows where it went.\n\nSource: https://github.com/open-telemetry/opentelemetry-collector/pull/12450",
+      "era": "present",
+      "date": "2025-02-24T12:00:00+00:00",
+      "importance": 0.8,
+      "tags": [
+        "thread",
+        "aftermath",
+        "gc-tuning",
+        "gogc-400",
+        "src:12450"
+      ],
+      "topics": [
+        "memory-management",
+        "migration"
+      ],
+      "people": [],
+      "places": [],
+      "factions": [],
+      "artifacts": [
+        "memory-ballast-extension",
+        "gomemlimit"
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/open-telemetry/opentelemetry-collector/pull/12450",
+          "title": "#12450 Add support to configure min GC intervals for soft and hard limits"
+        }
+      ],
+      "world": "real"
+    }
+  ],
+  "edges": [
+    {
+      "from": "the-case-file",
+      "to": "the-timeline",
+      "type": "related_to",
+      "note": "the spine, dated end to end"
+    },
+    {
+      "from": "the-case-file",
+      "to": "memory-ballast-extension",
+      "type": "references",
+      "note": "the mechanism whose whole life this file holds"
+    },
+    {
+      "from": "the-timeline",
+      "to": "the-case-file",
+      "type": "extends",
+      "note": "the spine the overview promises"
+    },
+    {
+      "from": "the-timeline",
+      "to": "d-deliberation-8343",
+      "type": "references",
+      "note": "the eleven comments that decided it"
+    },
+    {
+      "from": "memory-ballast-extension",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "the runtime feature that made it unnecessary"
+    },
+    {
+      "from": "memory-ballast-extension",
+      "to": "d-percentage-sizing-3456",
+      "type": "references",
+      "note": "the container-aware sizing that was its high-water mark"
+    },
+    {
+      "from": "gomemlimit",
+      "to": "memory-ballast-extension",
+      "type": "supersedes",
+      "note": "the runtime's soft limit replaced the manual heap trick"
+    },
+    {
+      "from": "gomemlimit",
+      "to": "t-gomemlimit-pivot-5708",
+      "type": "references",
+      "note": "noticed within weeks of Go 1.19, in a thread still open"
+    },
+    {
+      "from": "g-current-state",
+      "to": "g-ballast-era-tuning",
+      "type": "supersedes",
+      "note": "the ballast-era guidance, preserved below, no longer applies"
+    },
+    {
+      "from": "g-current-state",
+      "to": "r-v0109-removal",
+      "type": "caused_by",
+      "note": "current because the removal shipped"
+    },
+    {
+      "from": "g-ballast-era-tuning",
+      "to": "d-percentage-sizing-3456",
+      "type": "caused_by",
+      "note": "the container-aware sizing this guidance leaned on"
+    },
+    {
+      "from": "g-migration-map",
+      "to": "d-deprecation-8803",
+      "type": "extends",
+      "note": "the staging the deprecation PR set out"
+    },
+    {
+      "from": "g-migration-map",
+      "to": "t-cross-project-ripple",
+      "type": "references",
+      "note": "the Helm chart as proving ground"
+    },
+    {
+      "from": "g-open-questions",
+      "to": "t-gomemlimit-pivot-5708",
+      "type": "extends",
+      "note": "the still-open thread, held as unsettled rather than resolved"
+    },
+    {
+      "from": "g-open-questions",
+      "to": "d-init-step-rejected-9218",
+      "type": "references",
+      "note": "the recorded, unacted observation about the soft limit"
+    },
+    {
+      "from": "d-percentage-sizing-3456",
+      "to": "memory-ballast-extension",
+      "type": "extends",
+      "note": "the feature that made the ballast deployment-portable"
+    },
+    {
+      "from": "d-percentage-sizing-3456",
+      "to": "r-v030-percentage",
+      "type": "related_to",
+      "note": "shipped in v0.30.0"
+    },
+    {
+      "from": "d-internal-removed-3493",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "the extension becomes the only home"
+    },
+    {
+      "from": "d-internal-removed-3493",
+      "to": "r-v031-cmdline-removed",
+      "type": "related_to",
+      "note": "the removal landed via #3626 in v0.31.0"
+    },
+    {
+      "from": "d-config-cleanup-4365",
+      "to": "r-v039-config-removed",
+      "type": "related_to",
+      "note": "the changelog line that dates the config's second death"
+    },
+    {
+      "from": "d-config-cleanup-4365",
+      "to": "d-internal-removed-3493",
+      "type": "extends",
+      "note": "the sweep continuing: knobs follow mechanisms"
+    },
+    {
+      "from": "d-deliberation-8343",
+      "to": "d-deprecation-8803",
+      "type": "caused_by",
+      "note": "the deliberation's direct product"
+    },
+    {
+      "from": "d-deliberation-8343",
+      "to": "gomemlimit",
+      "type": "references",
+      "note": "the replacement whose case this thread made"
+    },
+    {
+      "from": "d-deliberation-8343",
+      "to": "t-user-experience",
+      "type": "references",
+      "note": "the production stories that grounded it"
+    },
+    {
+      "from": "d-deprecation-8803",
+      "to": "d-deliberation-8343",
+      "type": "caused_by",
+      "note": "carried the deliberation into the changelog"
+    },
+    {
+      "from": "d-deprecation-8803",
+      "to": "r-v092-deprecated",
+      "type": "related_to",
+      "note": "the notice as shipped"
+    },
+    {
+      "from": "d-deprecation-8803",
+      "to": "t-cross-project-ripple",
+      "type": "references",
+      "note": "sequenced behind the Helm chart on purpose"
+    },
+    {
+      "from": "d-removal-10671",
+      "to": "d-deprecation-8803",
+      "type": "supersedes",
+      "note": "the deprecation window ends; deprecated becomes gone"
+    },
+    {
+      "from": "d-removal-10671",
+      "to": "r-v0109-removal",
+      "type": "related_to",
+      "note": "shipped in v0.109.0"
+    },
+    {
+      "from": "d-removal-10671",
+      "to": "r-v0106-accounting",
+      "type": "related_to",
+      "note": "the three-layer accounting removal that preceded it"
+    },
+    {
+      "from": "d-init-step-rejected-9218",
+      "to": "g-open-questions",
+      "type": "related_to",
+      "note": "the soft-limit observation it left on the record"
+    },
+    {
+      "from": "d-init-step-rejected-9218",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "fail-fast nudging chosen; removal followed within the year"
+    },
+    {
+      "from": "t-gomemlimit-pivot-5708",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "noticed the runtime's answer within weeks"
+    },
+    {
+      "from": "t-gomemlimit-pivot-5708",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "named the ending a year before the deliberation opened"
+    },
+    {
+      "from": "t-cross-project-ripple",
+      "to": "g-migration-map",
+      "type": "related_to",
+      "note": "the staging pattern seen from the neighbours' side"
+    },
+    {
+      "from": "t-cross-project-ripple",
+      "to": "d-removal-10671",
+      "type": "references",
+      "note": "the six-months evidence the removal cited"
+    },
+    {
+      "from": "t-user-experience",
+      "to": "d-deliberation-8343",
+      "type": "extends",
+      "note": "the evidence layer under the decision"
+    },
+    {
+      "from": "t-user-experience",
+      "to": "t-gomemlimit-pivot-5708",
+      "type": "references",
+      "note": "the scale pain that thread still holds"
+    },
+    {
+      "from": "r-v030-percentage",
+      "to": "d-percentage-sizing-3456",
+      "type": "related_to",
+      "note": "the decision this line shipped"
+    },
+    {
+      "from": "r-v031-cmdline-removed",
+      "to": "d-internal-removed-3493",
+      "type": "related_to",
+      "note": "the decision behind the line"
+    },
+    {
+      "from": "r-v031-cmdline-removed",
+      "to": "r-v030-percentage",
+      "type": "extends",
+      "note": "one release later, the old path closes"
+    },
+    {
+      "from": "r-v039-config-removed",
+      "to": "d-config-cleanup-4365",
+      "type": "related_to",
+      "note": "the same-day PR that did it"
+    },
+    {
+      "from": "r-v092-deprecated",
+      "to": "d-deprecation-8803",
+      "type": "related_to",
+      "note": "the PR that wrote this line"
+    },
+    {
+      "from": "r-v092-deprecated",
+      "to": "r-v039-config-removed",
+      "type": "related_to",
+      "note": "the previous rung of the ladder, two years earlier"
+    },
+    {
+      "from": "r-v0106-accounting",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the layered removal's first shipment"
+    },
+    {
+      "from": "r-v0106-accounting",
+      "to": "r-v092-deprecated",
+      "type": "extends",
+      "note": "the deprecation window doing its work"
+    },
+    {
+      "from": "r-v0109-removal",
+      "to": "r-v0106-accounting",
+      "type": "extends",
+      "note": "the formality after the unwinding"
+    },
+    {
+      "from": "r-v0109-removal",
+      "to": "the-timeline",
+      "type": "related_to",
+      "note": "the spine's last dated point"
+    },
+    {
+      "from": "t-origin-45",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "the mechanism whose whole lifecycle starts here"
+    },
+    {
+      "from": "t-origin-45",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "the 2023 deliberation re-read this PR's Twitch rationale"
+    },
+    {
+      "from": "t-darwin-test-58",
+      "to": "t-origin-45",
+      "type": "related_to",
+      "note": "filed within hours of the merge"
+    },
+    {
+      "from": "t-darwin-test-58",
+      "to": "t-testbed-proof-85",
+      "type": "related_to",
+      "note": "the standalone test that replaced the unit test"
+    },
+    {
+      "from": "t-testbed-proof-85",
+      "to": "t-origin-45",
+      "type": "extends",
+      "note": "validated the origin PR's throughput claims"
+    },
+    {
+      "from": "t-testbed-proof-85",
+      "to": "t-flaky-test-3233",
+      "type": "related_to",
+      "note": "the same TestBallastMemory turns flaky in 2021"
+    },
+    {
+      "from": "d-memory-limiter-498",
+      "to": "t-two-knobs-1019",
+      "type": "related_to",
+      "note": "the drift this coupling produced in practice"
+    },
+    {
+      "from": "d-memory-limiter-498",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "the tuning stack this processor anchored"
+    },
+    {
+      "from": "t-two-knobs-1019",
+      "to": "d-single-owner-3532",
+      "type": "related_to",
+      "note": "the 2021 fix: one owner for the size"
+    },
+    {
+      "from": "t-two-knobs-1019",
+      "to": "t-simplify-ask-2516",
+      "type": "related_to",
+      "note": "the same complaint, asked as a question in 2021"
+    },
+    {
+      "from": "t-percentage-ask-1078",
+      "to": "d-percentage-sizing-3456",
+      "type": "related_to",
+      "note": "the ballast half of the ask, delivered 2021"
+    },
+    {
+      "from": "t-percentage-ask-1078",
+      "to": "t-percentage-split-3335",
+      "type": "related_to",
+      "note": "the PR that carried percentages into the extension"
+    },
+    {
+      "from": "t-first-extension-try-1960",
+      "to": "d-extension-lands-3009",
+      "type": "related_to",
+      "note": "the second attempt, landed six months later"
+    },
+    {
+      "from": "t-first-extension-try-1960",
+      "to": "r-v0106-accounting",
+      "type": "related_to",
+      "note": "the metrics accounting question resolved only in 2024"
+    },
+    {
+      "from": "t-first-extension-try-1960",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "the undefined-behavior worry that finally ended the mechanism"
+    },
+    {
+      "from": "t-limiter-oom-1121",
+      "to": "d-memory-limiter-498",
+      "type": "related_to",
+      "note": "tested the promise in the limiter's own description"
+    },
+    {
+      "from": "t-limiter-oom-1121",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "why the era's tuning advice carried caveats"
+    },
+    {
+      "from": "t-simplify-ask-2516",
+      "to": "d-percentage-sizing-3456",
+      "type": "related_to",
+      "note": "the plan stated here became #3456"
+    },
+    {
+      "from": "t-simplify-ask-2516",
+      "to": "d-flag-noop-3626",
+      "type": "related_to",
+      "note": "and the flag-removal half became #3626"
+    },
+    {
+      "from": "d-extension-lands-3009",
+      "to": "t-first-extension-try-1960",
+      "type": "extends",
+      "note": "picked up the stale 2020 attempt"
+    },
+    {
+      "from": "d-extension-lands-3009",
+      "to": "d-internal-removed-3493",
+      "type": "related_to",
+      "note": "two ballasts coexisted until the internal one was removed"
+    },
+    {
+      "from": "d-extension-lands-3009",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "birth of the component this artifact describes"
+    },
+    {
+      "from": "t-flaky-test-3233",
+      "to": "t-testbed-proof-85",
+      "type": "related_to",
+      "note": "the 2019 test this flakiness inherited"
+    },
+    {
+      "from": "t-flaky-test-3233",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "nondeterminism later became part of the case against the ballast"
+    },
+    {
+      "from": "t-percentage-split-3335",
+      "to": "d-percentage-sizing-3456",
+      "type": "related_to",
+      "note": "the resubmitted half that merged"
+    },
+    {
+      "from": "t-percentage-split-3335",
+      "to": "t-percentage-ask-1078",
+      "type": "extends",
+      "note": "answers the 2020 percentage ask for the ballast"
+    },
+    {
+      "from": "d-single-owner-3532",
+      "to": "d-config-cleanup-4365",
+      "type": "related_to",
+      "note": "the knob deprecated here was deleted in November"
+    },
+    {
+      "from": "d-single-owner-3532",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "the extension becomes the size's single source"
+    },
+    {
+      "from": "d-flag-noop-3626",
+      "to": "d-internal-removed-3493",
+      "type": "related_to",
+      "note": "the parallel PR held for the distro dependency"
+    },
+    {
+      "from": "d-flag-noop-3626",
+      "to": "r-v031-cmdline-removed",
+      "type": "related_to",
+      "note": "shipped in v0.31.0"
+    },
+    {
+      "from": "g-sizing-gap-4201",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "the numbers as the era knew them"
+    },
+    {
+      "from": "g-sizing-gap-4201",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "closed as wontfix only after the removal"
+    },
+    {
+      "from": "t-examples-catchup-4247",
+      "to": "d-flag-noop-3626",
+      "type": "caused_by",
+      "note": "the warning users hit came from this change"
+    },
+    {
+      "from": "t-examples-catchup-4247",
+      "to": "r-v031-cmdline-removed",
+      "type": "related_to",
+      "note": "the release that carried the deprecation warning"
+    },
+    {
+      "from": "t-cleanup-loose-ends-4696",
+      "to": "d-config-cleanup-4365",
+      "type": "extends",
+      "note": "the same sweep, ten weeks on: messages catch up with removals"
+    },
+    {
+      "from": "t-telemetry-entanglement-5571",
+      "to": "t-metric-accounting-8342",
+      "type": "related_to",
+      "note": "the same coupling, named again in 2023 and proposed for removal"
+    },
+    {
+      "from": "t-telemetry-entanglement-5571",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "the ballast's quiet tax on startup ordering"
+    },
+    {
+      "from": "t-cgroup-fragility-6389",
+      "to": "d-percentage-sizing-3456",
+      "type": "related_to",
+      "note": "percentage sizing pulled cgroup detection into the ballast"
+    },
+    {
+      "from": "t-cgroup-fragility-6389",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "convenience feature, fragile foundation"
+    },
+    {
+      "from": "t-32bit-crash-6443",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "a sharp edge on the set-and-forget path"
+    },
+    {
+      "from": "t-32bit-crash-6443",
+      "to": "t-cgroup-fragility-6389",
+      "type": "related_to",
+      "note": "same season of automatic-sizing startup failures"
+    },
+    {
+      "from": "d-module-split-6426",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "held at arm's length from core, two years before deletion"
+    },
+    {
+      "from": "d-module-split-6426",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the seam the 2024 removal tore along"
+    },
+    {
+      "from": "t-buffer-pool-7264",
+      "to": "t-ballast-rss-7512",
+      "type": "related_to",
+      "note": "the same doubt goes from aside to incident a month later"
+    },
+    {
+      "from": "t-buffer-pool-7264",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "the trade-off behind all the tuning advice"
+    },
+    {
+      "from": "t-ballast-rss-7512",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "cited by the deliberation as evidence the ballast may be risky"
+    },
+    {
+      "from": "t-ballast-rss-7512",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "the fix offered mid-thread"
+    },
+    {
+      "from": "t-ballast-rss-7512",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "working as intended stopped being an answer here"
+    },
+    {
+      "from": "t-tuning-roulette-8217",
+      "to": "t-user-experience",
+      "type": "related_to",
+      "note": "the floor-level view of the same pain"
+    },
+    {
+      "from": "t-tuning-roulette-8217",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "the knobs as users actually turned them"
+    },
+    {
+      "from": "t-metric-accounting-8342",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "opened seventeen minutes apart, two prongs of the same doubt"
+    },
+    {
+      "from": "t-metric-accounting-8342",
+      "to": "r-v0106-accounting",
+      "type": "related_to",
+      "note": "the release where the metric stopped subtracting"
+    },
+    {
+      "from": "t-metric-accounting-8342",
+      "to": "t-telemetry-entanglement-5571",
+      "type": "related_to",
+      "note": "the 2022 fix that documented the coupling"
+    },
+    {
+      "from": "t-stricter-limiter-8694",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "this OOMKilled analysis fed straight into the removal case"
+    },
+    {
+      "from": "t-stricter-limiter-8694",
+      "to": "t-gomemlimit-pivot-5708",
+      "type": "related_to",
+      "note": "the 2022 proposal this analysis vindicated"
+    },
+    {
+      "from": "t-stricter-limiter-8694",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "get rid of the ballast, use the runtime"
+    },
+    {
+      "from": "t-memory-request-11039",
+      "to": "d-deprecation-8803",
+      "type": "related_to",
+      "note": "deprecated soon, said while that PR was still open"
+    },
+    {
+      "from": "t-memory-request-11039",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "the default answer given at the door"
+    },
+    {
+      "from": "d-limiter-extension-8964",
+      "to": "d-init-step-rejected-9218",
+      "type": "related_to",
+      "note": "the ordering detour this review produced"
+    },
+    {
+      "from": "d-limiter-extension-8964",
+      "to": "d-deprecation-8803",
+      "type": "related_to",
+      "note": "reviewed while the deprecation merged underneath it"
+    },
+    {
+      "from": "d-limiter-extension-8964",
+      "to": "memory-ballast-extension",
+      "type": "related_to",
+      "note": "the replacement born with ballast scar tissue"
+    },
+    {
+      "from": "g-readme-flip-9152",
+      "to": "d-deprecation-8803",
+      "type": "extends",
+      "note": "the deprecation notice became README guidance"
+    },
+    {
+      "from": "g-readme-flip-9152",
+      "to": "g-migration-map",
+      "type": "related_to",
+      "note": "where the flipped advice eventually pointed"
+    },
+    {
+      "from": "g-readme-flip-9152",
+      "to": "gomemlimit",
+      "type": "related_to",
+      "note": "the new recommendation by name"
+    },
+    {
+      "from": "t-going-away-9158",
+      "to": "d-deliberation-8343",
+      "type": "related_to",
+      "note": "explicitly held waiting on the deliberation"
+    },
+    {
+      "from": "t-going-away-9158",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "unblocked the day the removal merged"
+    },
+    {
+      "from": "t-scope-ghost-9494",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the deletion that ended the ballast's part in this cleanup"
+    },
+    {
+      "from": "t-scope-ghost-9494",
+      "to": "r-v092-deprecated",
+      "type": "related_to",
+      "note": "already deprecated when this list was written"
+    },
+    {
+      "from": "t-config-folklore-9514",
+      "to": "g-ballast-era-tuning",
+      "type": "related_to",
+      "note": "the 1/3 to 1/2 rule, here embedded in the wild"
+    },
+    {
+      "from": "t-config-folklore-9514",
+      "to": "t-aftermath-10995",
+      "type": "related_to",
+      "note": "what happened to configs like this on upgrade, six months later"
+    },
+    {
+      "from": "t-roster-ghost-10598",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "eight days later the deletion PR opened"
+    },
+    {
+      "from": "t-roster-ghost-10598",
+      "to": "d-deprecation-8803",
+      "type": "related_to",
+      "note": "the Deprecated stability label the roster reports"
+    },
+    {
+      "from": "t-live-config-10660",
+      "to": "t-aftermath-10995",
+      "type": "related_to",
+      "note": "the failure configs like this one hit on upgrade"
+    },
+    {
+      "from": "t-live-config-10660",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "opened the day after this config was posted"
+    },
+    {
+      "from": "d-privileged-pattern-10181",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the removal that resolved the rejected direction"
+    },
+    {
+      "from": "d-privileged-pattern-10181",
+      "to": "d-deprecation-8803",
+      "type": "related_to",
+      "note": "the deprecation that made 'luckily' possible"
+    },
+    {
+      "from": "t-aftermath-10995",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the deletion this user collided with, a week before it merged"
+    },
+    {
+      "from": "t-aftermath-10995",
+      "to": "t-live-config-10660",
+      "type": "related_to",
+      "note": "the kind of config that hit this wall"
+    },
+    {
+      "from": "t-aftermath-10995",
+      "to": "t-cross-project-ripple",
+      "type": "related_to",
+      "note": "removal propagated repo by repo; the releases repo moved first"
+    },
+    {
+      "from": "d-mentions-cleanup-11010",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the companion deletion, six days later"
+    },
+    {
+      "from": "d-mentions-cleanup-11010",
+      "to": "t-aftermath-10995",
+      "type": "related_to",
+      "note": "opened the day after the first user hit the wall"
+    },
+    {
+      "from": "d-mentions-cleanup-11010",
+      "to": "d-config-cleanup-4365",
+      "type": "related_to",
+      "note": "the same sweep discipline, three years earlier"
+    },
+    {
+      "from": "t-gc-aftermath-12450",
+      "to": "t-gomemlimit-pivot-5708",
+      "type": "related_to",
+      "note": "the runtime-knob path this lands on"
+    },
+    {
+      "from": "t-gc-aftermath-12450",
+      "to": "g-migration-map",
+      "type": "related_to",
+      "note": "where post-ballast GC tuning lives now"
+    },
+    {
+      "from": "t-gc-aftermath-12450",
+      "to": "d-removal-10671",
+      "type": "related_to",
+      "note": "the removal whose consequences this measures"
+    }
+  ]
+}

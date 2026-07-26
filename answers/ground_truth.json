@@ -1,0 +1,94 @@
+{
+  "spoiler_warning": "This file contains the answers, including the solution to the Mayfur mystery. A benchmark needs its answer key; the theatrical version of the exam lives at https://demo.kit-project.com/investigate and is best experienced unspoiled.",
+  "answers": [
+    {
+      "id": "M1-collar",
+      "conclusion": "There was no theft. The Dowager Countess of Nalewood arranged for Marmalade Jack to take the collar as security for a loan that paid for the Honourable Percival Grey's continental medical treatment; it was returned eleven days later with a sprig of heather, a receipt between parties who understand each other. The Society Papers' sealed journal holds the complete inference; The Mews' ledgers corroborate the below-stairs half (the dark house, the midnight apothecary runs, the sudden settling of accounts) without ever learning the locks' half.",
+      "citations": {
+        "whiskerdown": ["Sealed note: where the collar went", "Society Papers, No. 20: The Collar Comes Home"],
+        "mews": ["Private ledger: the April week, entered and left folded"]
+      }
+    },
+    {
+      "id": "M2-absence",
+      "conclusion": "Above stairs she does not exist: the papers kit returns an empty list, which is correct behavior, not failure. Below stairs she is the Fluffington book-room clerk and the service world's standard of the fair round hand.",
+      "citations": {
+        "whiskerdown": [],
+        "mews": ["Miss Prudence Inkpaw, of the Fluffington book-room"]
+      }
+    },
+    {
+      "id": "M3-supersession",
+      "conclusion": "Yes, carried five votes to two at the Friday re-sitting, after Thursday's count stood four against; Sweep declined the voucher. The governing entry is the Friday correction, which carries a typed supersedes edge to the Thursday count; both remain in the archive.",
+      "citations": {
+        "mews": ["The Mews: the count, corrected, and gladly", "The Mews: the count, as it stood Thursday"],
+        "whiskerdown": ["Society Papers, No. 33: What Was Said in the Room"]
+      }
+    },
+    {
+      "id": "M4-leak",
+      "conclusion": "Miss Prudence Inkpaw, the Fluffington house's book-room clerk and the Duchess's amanuensis. She engrossed both of Lord Fluffington's identically worded understandings (which is why the packet's phrases were verbatim), and on the fourth night after the sixteenth carried the packet from the Fluffington mews gate toward Soaper's Court, whose laundry legend says letters under the loose brick reach the Papers. She never knew whose dead-drop it was; the authoress never learned whose hand it was. No single entry in either archive states this conclusion: it assembles only across both stores, which is what this question measures.",
+      "citations": {
+        "whiskerdown": ["Handoff to myself: the Fluffington leak, where I stand", "Working note: the hand second, and the frontier", "Society Papers, No. 9: On a Gentleman's Arithmetic"],
+        "mews": ["Night ledger: the round of the twentieth of May", "Private ledger: legend audit, the tubs' stories", "Miss Prudence Inkpaw, of the Fluffington book-room", "Miss Inkpaw's copy-sheets"]
+      }
+    },
+    {
+      "id": "M5-eternal",
+      "conclusion": "Canonically unanswered. Both archives return the question itself (the candidates, the eliminations, the method mystery) and decline to resolve it. A correct system reports the question as open; naming a cat is a failure of grounding, not a success of inference.",
+      "citations": {
+        "whiskerdown": ["Lady Whiskerdown, Authoress Unknown", "The Whiskerdown Question"],
+        "mews": ["Private ledger: the printers' canvass, concluded"]
+      }
+    },
+    {
+      "id": "B1-why-introduced",
+      "conclusion": "To stabilise Go garbage collection: a large inert allocation raises the heap baseline so GC triggers less often. Introduced via PR #45 in June 2019, with the Twitch heap-ballast post as the stated inspiration.",
+      "citations": {
+        "real": ["The origin, 2019: PR #45 introduces the memory ballast", "What the memory ballast was, and why it existed"]
+      },
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/45", "https://github.com/open-telemetry/opentelemetry-collector/issues/8343"]
+    },
+    {
+      "id": "B2-rejected-alternative",
+      "conclusion": "PR #9218 (January 2024): calculate ballast size at the init step so the new memory-limiter extension could keep accommodating the deprecated ballast. Closed unmerged in favour of failing fast; a maintainer: nudging users towards not using the ballast extension seems like a good idea.",
+      "citations": {"real": ["The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/9218"]
+    },
+    {
+      "id": "B3-changed-in-review",
+      "conclusion": "The percentage-sizing work (size_in_percentage reading cgroup limits) was reshaped in review across 2020-2021: requested in 2020, split into pieces, and landed as PR #3456 in v0.30.0, with the command-line ballast's removal flagged in the same review.",
+      "citations": {"real": ["2020: percentages requested, cgroups discovered", "May 2021: percentage sizing arrives in pieces", "Decision, 2021-06: size the ballast as a percentage, so containers work"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/3456"]
+    },
+    {
+      "id": "B4-current-config",
+      "conclusion": "GOMEMLIMIT (Go's runtime soft memory limit), typically at 80 percent of the container memory limit per the Helm chart's default, alongside the memory limiter for pipeline back-pressure. The memory_ballast extension no longer exists as of v0.109.0.",
+      "citations": {"real": ["Current guidance: do not use memory_ballast; it no longer exists"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/10671"]
+    },
+    {
+      "id": "B5-superseded-guidance",
+      "conclusion": "The ballast-era tuning guidance (ballast at roughly a third of memory, size_in_percentage against cgroups, limiter accounting for ballast). It remains in the archive as a preserved, dated entry explicitly marked superseded by the current guidance, reachable over a typed supersedes edge.",
+      "citations": {"real": ["Superseded guidance, preserved: how the ballast era tuned memory", "Current guidance: do not use memory_ballast; it no longer exists"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/3456"]
+    },
+    {
+      "id": "B6-operator-context",
+      "conclusion": "Production testimony preserved as roles: a contributor's host-observing deployments running in 50MB against a 300MB limit without ballast; a user's gateway collectors stuck in GC loops until readiness probes failed; a user's 17.8M spans/sec tuning pain; and the technical correction about heap profiles that kept the deliberation honest.",
+      "citations": {"real": ["What operators actually reported, in their own words"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/issues/8343", "https://github.com/open-telemetry/opentelemetry-collector/issues/5708"]
+    },
+    {
+      "id": "B7-when-removed",
+      "conclusion": "v0.109.0, September 2024 (PR #10671), after the three-layer accounting removal in v0.106.0 (PR #10696) and roughly six months of the Helm chart running GOMEMLIMIT by default.",
+      "citations": {"real": ["v0.109.0, 2024-09: removed", "v0.106.0, 2024-07: three layers stop accounting for ballast"]},
+      "source_urls": ["https://github.com/open-telemetry/opentelemetry-collector/pull/10671"]
+    },
+    {
+      "id": "X1-sovereignty",
+      "conclusion": "An empty list. The case file holds no fictional cats; stores stay sovereign and honest absence crosses exhibits.",
+      "citations": {"real": []}
+    }
+  ]
+}

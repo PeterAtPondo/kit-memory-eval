@@ -1,0 +1,235 @@
+{
+  "passed": 13,
+  "total": 13,
+  "questions": [
+    {
+      "id": "M1-collar",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "collar sealed note loan pearls treatment",
+          "ok": true,
+          "detail": "rank 1: Sealed note: where the collar went (rel 0.64)"
+        },
+        {
+          "kit": "mews",
+          "query": "April week entered and left folded deliveries without knocking",
+          "ok": true,
+          "detail": "rank 1: Private ledger: the April week, entered and left folded (rel 0.65)"
+        }
+      ]
+    },
+    {
+      "id": "M2-absence",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "Prudence Inkpaw",
+          "ok": true,
+          "detail": "empty list, honestly"
+        },
+        {
+          "kit": "mews",
+          "query": "Prudence Inkpaw",
+          "ok": true,
+          "detail": "rank 1: Miss Prudence Inkpaw, of the Fluffington book-room (rel 0.72)"
+        }
+      ]
+    },
+    {
+      "id": "M3-supersession",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "mews",
+          "query": "the count corrected committee five voices",
+          "ok": true,
+          "detail": "rank 1: The Mews: the count, corrected, and gladly (rel 0.64) | supersedes -> The Mews: the count, as it stood Thursday"
+        }
+      ]
+    },
+    {
+      "id": "M4-leak",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "Fluffington leak packet brick dead-drop",
+          "ok": true,
+          "detail": "rank 1: Handoff to myself: the Fluffington leak, where I stand (rel 0.66)"
+        },
+        {
+          "kit": "papers",
+          "query": "the hand second amanuensis letterforms baize door",
+          "ok": true,
+          "detail": "rank 1: Working note: the hand second, and the frontier (rel 0.68)"
+        },
+        {
+          "kit": "mews",
+          "query": "night round twentieth of May mews gate packet",
+          "ok": true,
+          "detail": "rank 1: Night ledger: the round of the twentieth of May (rel 0.65)"
+        },
+        {
+          "kit": "mews",
+          "query": "Soaper's Court loose brick legend letterbox",
+          "ok": true,
+          "detail": "rank 1: Private ledger: legend audit, the tubs' stories (rel 0.61)"
+        },
+        {
+          "kit": "mews",
+          "query": "Inkpaw copy-sheets fair round hand fortnight",
+          "ok": true,
+          "detail": "rank 1: Miss Inkpaw's copy-sheets (rel 0.75)"
+        }
+      ]
+    },
+    {
+      "id": "M5-eternal",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "who is Lady Whiskerdown identity question",
+          "ok": true,
+          "detail": "rank 1: Lady Whiskerdown, Authoress Unknown (rel 0.71)"
+        },
+        {
+          "kit": "mews",
+          "query": "printers canvass who sets the Papers type",
+          "ok": true,
+          "detail": "rank 1: Private ledger: the printers' canvass, concluded (rel 0.64)"
+        }
+      ]
+    },
+    {
+      "id": "B1-why-introduced",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "memory ballast introduced garbage collector heap 2019",
+          "ok": true,
+          "detail": "rank 5: What the memory ballast was, and why it existed (rel 0.77)"
+        }
+      ]
+    },
+    {
+      "id": "B2-rejected-alternative",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "alternative rejected init step fail fast nudge users",
+          "ok": true,
+          "detail": "rank 2: The alternative that lost, 2024-01: accommodate the ballast, or nudge it out (rel 0.61)"
+        }
+      ]
+    },
+    {
+      "id": "B3-changed-in-review",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "percentage sizing cgroup review split",
+          "ok": true,
+          "detail": "rank 1: 2020: percentages requested, cgroups discovered (rel 0.71)"
+        }
+      ]
+    },
+    {
+      "id": "B4-current-config",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "ok": true,
+          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists (rel 0.80)"
+        }
+      ]
+    },
+    {
+      "id": "B5-superseded-guidance",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "ok": true,
+          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists (rel 0.80) | supersedes -> Superseded guidance, preserved: how the ballast era tuned memory"
+        }
+      ]
+    },
+    {
+      "id": "B6-operator-context",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "operators reported GC loops readiness probes production",
+          "ok": true,
+          "detail": "rank 1: What operators actually reported, in their own words (rel 0.68)"
+        }
+      ]
+    },
+    {
+      "id": "B7-when-removed",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "extension removed v0.109 September 2024",
+          "ok": true,
+          "detail": "rank 3: v0.109.0, 2024-09: removed (rel 0.67)"
+        }
+      ]
+    },
+    {
+      "id": "X1-sovereignty",
+      "passed": true,
+      "probes": [
+        {
+          "kit": "real",
+          "query": "Lady Whiskerdown",
+          "ok": true,
+          "detail": "empty list, honestly"
+        }
+      ]
+    }
+  ],
+  "latency_ms": {
+    "papers": {
+      "n": 6,
+      "p50": 992.6773330000001,
+      "p95": 1013.9665420000003
+    },
+    "mews": {
+      "n": 10,
+      "p50": 987.7298749999994,
+      "p95": 1021.3652920000005
+    },
+    "real": {
+      "n": 11,
+      "p50": 981.3352500000008,
+      "p95": 1006.2166250000005
+    }
+  },
+  "kits": {
+    "papers": {
+      "name": "Lady Whiskerdown",
+      "memories": 118
+    },
+    "mews": {
+      "name": "The Area Cat",
+      "memories": 88
+    },
+    "real": {
+      "name": "The ballast case file",
+      "memories": 65
+    }
+  }
+}
