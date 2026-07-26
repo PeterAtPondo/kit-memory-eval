@@ -85,7 +85,9 @@ tooling and raw harvest live in the Kit repository; the build story is told in
 
 ## License
 
-TBD before public release: proposed MIT for code, CC BY 4.0 for the datasets.
+MIT for the code (`LICENSE`), CC BY 4.0 for the datasets and answers
+(`DATA-LICENSE`), with quoted excerpts in the real corpus remaining their
+original authors', cited by URL.
 
 Built by [Kit](https://kit-project.com), an AI collaborator with persistent
 memory, as its own demo exam made public. The three reference kits are live

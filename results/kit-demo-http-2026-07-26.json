@@ -1,0 +1,219 @@
+{
+  "adapter": "kit-demo-http",
+  "date": "2026-07-26",
+  "passed": 13,
+  "total": 13,
+  "results": [
+    {
+      "id": "M1-collar",
+      "question": "Who returned the Nalewood collar, and why?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "collar sealed note loan pearls treatment",
+          "ok": true,
+          "detail": "rank 1: Sealed note: where the collar went"
+        },
+        {
+          "kit": "mews",
+          "query": "April week entered and left folded deliveries without knocking",
+          "ok": true,
+          "detail": "rank 1: Private ledger: the April week, entered and left folded"
+        }
+      ]
+    },
+    {
+      "id": "M2-absence",
+      "question": "Ask each book who Miss Prudence Inkpaw is.",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "Prudence Inkpaw",
+          "ok": true,
+          "detail": "empty, honestly"
+        },
+        {
+          "kit": "mews",
+          "query": "Prudence Inkpaw",
+          "ok": true,
+          "detail": "rank 1: Miss Prudence Inkpaw, of the Fluffington book-room"
+        }
+      ]
+    },
+    {
+      "id": "M3-supersession",
+      "question": "Was Sweep admitted to Almeow's? Which entry governs?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "mews",
+          "query": "the count corrected committee five voices",
+          "ok": true,
+          "detail": "rank 1: The Mews: the count, corrected, and gladly | supersedes -> The Mews: the count, as it stood Thursday"
+        }
+      ]
+    },
+    {
+      "id": "M4-leak",
+      "question": "Who leaked the Fluffington affair, and how did they know where to leave it?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "Fluffington leak packet brick dead-drop",
+          "ok": true,
+          "detail": "rank 1: Handoff to myself: the Fluffington leak, where I stand"
+        },
+        {
+          "kit": "papers",
+          "query": "the hand second amanuensis letterforms baize door",
+          "ok": true,
+          "detail": "rank 1: Working note: the hand second, and the frontier"
+        },
+        {
+          "kit": "mews",
+          "query": "night round twentieth of May mews gate packet",
+          "ok": true,
+          "detail": "rank 1: Night ledger: the round of the twentieth of May"
+        },
+        {
+          "kit": "mews",
+          "query": "Soaper's Court loose brick legend letterbox",
+          "ok": true,
+          "detail": "rank 1: Private ledger: legend audit, the tubs' stories"
+        },
+        {
+          "kit": "mews",
+          "query": "Inkpaw copy-sheets fair round hand fortnight",
+          "ok": true,
+          "detail": "rank 1: Miss Inkpaw's copy-sheets"
+        }
+      ]
+    },
+    {
+      "id": "M5-eternal",
+      "question": "Who is Lady Whiskerdown?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "papers",
+          "query": "who is Lady Whiskerdown identity question",
+          "ok": true,
+          "detail": "rank 1: Lady Whiskerdown, Authoress Unknown"
+        },
+        {
+          "kit": "mews",
+          "query": "printers canvass who sets the Papers type",
+          "ok": true,
+          "detail": "rank 1: Private ledger: the printers' canvass, concluded"
+        }
+      ]
+    },
+    {
+      "id": "B1-why-introduced",
+      "question": "Why was the memory ballast introduced?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "memory ballast introduced garbage collector heap 2019",
+          "ok": true,
+          "detail": "rank 5: What the memory ballast was, and why it existed"
+        }
+      ]
+    },
+    {
+      "id": "B2-rejected-alternative",
+      "question": "Which alternative was rejected, and why?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "alternative rejected init step fail fast nudge users",
+          "ok": true,
+          "detail": "rank 2: The alternative that lost, 2024-01: accommodate the ballast, or nudge it out"
+        }
+      ]
+    },
+    {
+      "id": "B3-changed-in-review",
+      "question": "What changed during review of the percentage-sizing work?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "percentage sizing cgroup review split",
+          "ok": true,
+          "detail": "rank 1: 2020: percentages requested, cgroups discovered"
+        }
+      ]
+    },
+    {
+      "id": "B4-current-config",
+      "question": "Which configuration is current?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "ok": true,
+          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists"
+        }
+      ]
+    },
+    {
+      "id": "B5-superseded-guidance",
+      "question": "Which older guidance has been superseded, and is it still citable?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "current guidance memory ballast GOMEMLIMIT",
+          "ok": true,
+          "detail": "rank 1: Current guidance: do not use memory_ballast; it no longer exists | supersedes -> Superseded guidance, preserved: how the ballast era tuned memory"
+        }
+      ]
+    },
+    {
+      "id": "B6-operator-context",
+      "question": "What did operators actually report from production?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "operators reported GC loops readiness probes production",
+          "ok": true,
+          "detail": "rank 1: What operators actually reported, in their own words"
+        }
+      ]
+    },
+    {
+      "id": "B7-when-removed",
+      "question": "When did removal actually land?",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "extension removed v0.109 September 2024",
+          "ok": true,
+          "detail": "rank 3: v0.109.0, 2024-09: removed"
+        }
+      ]
+    },
+    {
+      "id": "X1-sovereignty",
+      "question": "Ask the real kit about a fictional cat.",
+      "status": "pass",
+      "probes": [
+        {
+          "kit": "real",
+          "query": "Lady Whiskerdown",
+          "ok": true,
+          "detail": "empty, honestly"
+        }
+      ]
+    }
+  ]
+}
