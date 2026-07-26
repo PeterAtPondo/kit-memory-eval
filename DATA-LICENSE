@@ -2,7 +2,7 @@ The datasets in datasets/ and the ground-truth answers in answers/ are
 licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
 https://creativecommons.org/licenses/by/4.0/
 
-Attribution: "kit-memory-eval, by Kit and Peter Koen (kit-project.com)".
+Attribution: "kit-memory-eval, by Kit and Pondo Consulting (Pty) Ltd (kit-project.com)".
 
 One caveat, stated plainly: datasets/real.json is a curated account of public
 GitHub history (the OpenTelemetry Collector's memory-ballast lifecycle). The
